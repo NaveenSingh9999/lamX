@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# lamx-vpn - optional killswitch, off by default
+# usage: lamx-vpn on|off|status
+case "${1:-status}" in
+  on)
+    wg-quick up wg0
+    nft add table inet lamxkill || true
+    nft 'add chain inet lamxkill out { type filter hook output priority 0; policy drop; }' || true
+    nft add rule inet lamxkill out oifname "wg0" accept || true
+    nft add rule inet lamxkill out oifname "lo" accept || true
+    echo "killswitch on: only wg0 and lo allowed"
+    ;;
+  off)
+    wg-quick down wg0 || true
+    nft delete table inet lamxkill || true
+    echo "killswitch off"
+    ;;
+  *)
+    wg show 2>/dev/null || echo "wg down"
+    nft list table inet lamxkill 2>/dev/null || echo "killswitch off"
+    ;;
+esac

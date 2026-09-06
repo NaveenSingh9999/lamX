@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# first-time setup wizard - private, neutral UI, no OS name exposed
+# runs once on first boot, then disables itself
+USERN="${SUDO_USER:-lamx}"
+TITLE="Initial setup"
+
+msg() { whiptail --title "$TITLE" --msgbox "$1" 10 60 || true; }
+ask() { whiptail --title "$TITLE" --inputbox "$1" 10 60 "$2" 3>&1 1>&2 2>&3 || true; }
+yesno() { whiptail --title "$TITLE" --yesno "$1" 10 60; }
+
+msg "Welcome. This one-time setup configures keys, network, and snapshots."
+
+# 1 timezone
+TZ=$(ask "Timezone (example: Asia/Kolkata)" "UTC")
+[ -n "$TZ" ] && [ -f "/usr/share/zoneinfo/$TZ" ] && ln -sf "/usr/share/zoneinfo/$TZ" /etc/localtime || true
+
+# 2 keyboard
+KB=$(ask "Keyboard layout (example: us)" "us")
+[ -n "$KB" ] && localectl set-keymap "$KB" || true
+
+# 3 hostname neutral
+HN=$(ask "Device name" "device")
+[ -n "$HN" ] && echo "$HN" > /etc/hostname || true
+
+# 4 TOTP for phone
+mkdir -p /etc/pam-u2f
+touch /etc/pam-u2f/authfile
+chmod 600 /etc/pam-u2f/authfile
+if [ ! -f /etc/users.oath ]; then
+  SECRET=$(head -c 20 /dev/urandom | base32 | tr -d '=' | cut -c1-32)
+  echo "HOTP/T30/6 $USERN - $SECRET" > /etc/users.oath
+  chmod 600 /etc/users.oath
+  URI="otpauth://totp/device:$USERN?secret=$SECRET&issuer=device&period=30&digits=6"
+  clear
+  echo "$URI" | qrencode -t ANSIUTF8 || echo "$URI"
+  echo ""
+  echo "Scan above in Aegis on your phone, then press Enter."
+  read -r _
+fi
+
+# 5 phone FIDO2 via USB
+if yesno "Connect phone via USB now to enroll as hardware key?"; then
+  clear
+  echo "Touch approve on phone when prompted."
+  pamu2fcfg -u "$USERN" >> /etc/pam-u2f/authfile || echo "Enroll skipped, run: pamu2fcfg -u $USERN >> /etc/pam-u2f/authfile"
+  read -rp "Press Enter to continue."
+fi
+
+# 6 network
+if yesno "Configure WiFi now?"; then
+  clear
+  nmtui || nmcli device wifi list || true
+  read -rp "Press Enter after network is up."
+fi
+
+# 7 snapshot baseline
+snapper -c root create-config / || true
+snapper -c root create --description "initial" || true
+
+# 8 KZC check
+systemctl enable --now kzc-monitor kzc-notify auditd || true
+loginctl enable-linger "$USERN" || true
+
+# 9 finish
+mkdir -p "/home/$USERN/.config"
+touch "/home/$USERN/.config/.setup-done"
+chown -R "$USERN:$USERN" "/home/$USERN/.config" || true
+msg "Setup complete. Use 'lamx-help' for commands. GUI starts with Sway."
+systemctl disable lamx-firstboot || true

@@ -1,0 +1,7 @@
+# lamX sudo - passwordless-first, silent
+# phone FIDO2 or hardware key first, then TOTP, then PIN fallback
+auth sufficient pam_u2f.so authfile=/etc/pam-u2f/authfile cue no-user-touch openasuser
+auth required pam_oath.so usersfile=/etc/users.oath window=30
+auth include system-auth
+account include system-auth
+session include system-auth

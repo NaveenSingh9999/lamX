@@ -1,0 +1,66 @@
+# glassy swayfx - drop-in sway replacement, open source scenefx
+set $term foot
+set $menu wofi --show drun
+set $mod Mod4
+
+output * bg #0a0e1a solid_color
+exec swww-daemon || true
+exec swww img /usr/share/backgrounds/lamx.png || true
+exec mako
+exec waybar
+exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec ~/.config/sway-welcome.sh
+exec swayidle -w timeout 60 'swaylock --screenshots --clock --indicator --effect-blur 7x5 --effect-vignette 0.5:0.5 --ring-color 3b82f6 --key-hl-color 60a5fa --inside-color 0a0a0a88 -f -c 0a0a0a' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock --screenshots --clock --indicator --effect-blur 7x5 -f -c 0a0a0a'
+
+# effects - glass
+blur enable
+blur_xray disable
+blur_passes 2
+blur_radius 6
+blur_brightness 1.0
+blur_contrast 1.0
+blur_saturation 1.0
+corner_radius 12
+smart_corner_radius enable
+shadows enable
+shadows_on_csd enable
+shadow_blur_radius 20
+shadow_color #00000099
+default_dim_inactive 0.12
+dim_inactive_colors.unfocused #0a0a0a
+
+# layer blur for bar, launcher, notifications
+layer_effects "waybar" blur enable; blur_ignore_transparent enable; shadows enable; corner_radius 12
+layer_effects "wofi" blur enable; shadows enable; corner_radius 14
+layer_effects "notifications" blur enable; shadows enable; corner_radius 12
+
+gaps inner 10
+gaps outer 8
+smart_gaps on
+
+bindsym $mod+Return exec $term
+bindsym $mod+d exec $menu
+bindsym $mod+Shift+q kill
+bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit?' -b 'Yes' 'swaymsg exit'
+
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+bindsym $mod+1 workspace 1
+bindsym $mod+2 workspace 2
+bindsym $mod+3 workspace 3
+bindsym $mod+4 workspace 4
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+
+floating_modifier $mod
+client.focused #3b82f6 #3b82f6 #ffffff #3b82f6 #3b82f6
+client.unfocused #1e293b #1e293b #94a3b8 #1e293b #1e293b
+font pango:JetBrainsMono Nerd Font 10

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# lamx-backup - encrypted Btrfs snapshot backup to USB or phone storage
+# usage: lamx-backup /run/media/usb
+DEST="${1:-}"
+[ -n "$DEST" ] || { echo "usage: lamx-backup /mnt/backup"; exit 1; }
+SNAP="/.snapshots/lamx-$(date +%Y%m%d-%H%M)"
+btrfs subvolume snapshot -r / "$SNAP"
+OUT="$DEST/lamx-$(date +%Y%m%d-%H%M).img.gpg"
+btrfs send "$SNAP" | gpg --symmetric --cipher-algo AES256 -o "$OUT"
+echo "backup -> $OUT"
+echo "restore: gpg -d $OUT | btrfs receive /mnt/restore"

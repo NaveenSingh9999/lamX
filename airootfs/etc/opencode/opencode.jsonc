@@ -1,0 +1,24 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "kzc-head": {
+      "mode": "primary",
+      "permission": {
+        "read": "allow",
+        "write": "allow",
+        "edit": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "bash": { "*": "allow" },
+        "task": "allow",
+        "external_directory": "allow",
+        "todowrite": "allow",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "skill": "allow"
+      }
+    }
+  },
+  "instructions": ["/etc/kzc/config.toml"]
+}

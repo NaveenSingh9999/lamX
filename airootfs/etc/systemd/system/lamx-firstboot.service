@@ -1,0 +1,13 @@
+[Unit]
+Description=lamX first boot enroll
+After=network.target
+ConditionPathExists=!/etc/lamx-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/lamx-firstboot
+ExecStartPost=/bin/touch /etc/lamx-done
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

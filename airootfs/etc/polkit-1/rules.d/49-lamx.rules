@@ -1,0 +1,7 @@
+polkit.addRule(function(action, subject) {
+  // single-user private system: only user in wheel may auth, others never
+  if (subject.isInGroup("wheel")) {
+    return polkit.Result.AUTH_SELF;
+  }
+  return polkit.Result.NO;
+});

@@ -1,0 +1,13 @@
+# lamX Wireguard template - fill keys, no auto-connect
+# usage: cp wg0.conf.example /etc/wireguard/wg0.conf, fill keys, systemctl enable wg-quick@wg0
+# killswitch is enforced by lamx-vpn script, not by default
+[Interface]
+PrivateKey = REPLACE_ME
+Address = 10.0.0.2/32
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = REPLACE_ME
+Endpoint = vpn.example.com:51820
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 25

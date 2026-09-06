@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# access prompt - passwordless, Windows-like
+# usage: lamx-prompt <command...>
+# triggers polkit auth which uses phone key or PIN+TOTP, no passwords
+if [ $# -eq 0 ]; then
+  echo "usage: lamx-prompt <command...>"
+  exit 1
+fi
+pkexec "$@"

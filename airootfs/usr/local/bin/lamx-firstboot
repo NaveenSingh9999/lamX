@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# first-boot - invokes interactive setup when possible, else minimal defaults
+USERN="${SUDO_USER:-lamx}"
+if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
+  exec /usr/local/bin/lamx-setup
+fi
+echo "=== initial setup for $USERN ==="
+mkdir -p /etc/pam-u2f
+touch /etc/pam-u2f/authfile
+chmod 600 /etc/pam-u2f/authfile
+if [ ! -f /etc/users.oath ]; then
+  SECRET=$(head -c 20 /dev/urandom | base32 | tr -d '=' | cut -c1-32)
+  echo "HOTP/T30/6 $USERN - $SECRET" > /etc/users.oath
+  chmod 600 /etc/users.oath
+  echo "Scan this in Aegis on your phone as backup:"
+  echo "otpauth://totp/lamX:$USERN?secret=$SECRET&issuer=lamX&period=30&digits=6"
+fi
+echo "To enroll phone as FIDO2 now via USB:"
+echo "  pamu2fcfg -u $USERN >> /etc/pam-u2f/authfile"
+echo "To enroll hardware key later, run same command again."
+loginctl enable-linger "$USERN" || true
+systemctl disable lamx-firstboot || true
+echo "Done."

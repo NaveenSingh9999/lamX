@@ -1,0 +1,23 @@
+[Unit]
+Description=KZC on-device security monitor
+After=network.target auditd.service
+Wants=auditd.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/kzc-monitor
+Restart=always
+RestartSec=2
+RefuseManualStop=yes
+RefuseManualStart=no
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=no
+AmbientCapabilities=CAP_KILL CAP_DAC_OVERRIDE CAP_AUDIT_READ
+MemoryMax=120M
+CPUQuota=20%
+
+[Install]
+WantedBy=multi-user.target

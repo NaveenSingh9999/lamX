@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# help - neutral, no OS identifiers
+cat <<'EOF'
+commands:
+  lamx list | disable <c> | enable <c>   hardware disconnect at kernel level
+    components: camera wifi bluetooth mic speakers usb ethernet nvidia
+  lamx-prompt <cmd>                      run restricted command with approval prompt
+  lamx-vpn on|off|status                 optional VPN killswitch, off by default
+  lamx-backup /mnt/backup                encrypted snapshot backup
+  lamx-wipe /dev/disk                    secure erase, asks ERASE
+  lamx-help                              this help
+
+keys:
+  boot: PIN + TPM. lock and sudo: touch phone key, fallback PIN + Aegis code.
+  enroll phone: pamu2fcfg -u $USER >> /etc/pam-u2f/authfile
+  enroll hardware key later: same command with key inserted.
+
+session:
+  Sway: Mod+Enter terminal, Mod+D launcher, Mod+Shift+E exit.
+  auto-lock 60s. lid close locks.
+EOF

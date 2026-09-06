@@ -1,0 +1,27 @@
+# KZC runtime rules - Falco-compatible, open source detections
+# privilege escalation
+- rule: kzc-shell-escape
+  desc: shell spawned from unexpected parent
+  condition: proc.name in (bash, sh, zsh, fish) and proc.pname in (librewolf, wofi, waybar)
+  output: shell escape parent=%proc.pname cmd=%proc.cmdline
+  priority: CRITICAL
+- rule: kzc-new-setuid
+  desc: new setuid file appeared
+  condition: evt.type=creat and fd.mode contains S_ISUID
+  output: new setuid %fd.name
+  priority: HIGH
+- rule: kzc-kernel-module-load
+  desc: kernel module load outside pacman
+  condition: evt.type=init_module and proc.pname not in (pacman, mkinitcpio, modprobe)
+  output: module load by %proc.pname %evt.arg.flags
+  priority: HIGH
+- rule: kzc-usb-storage
+  desc: USB storage inserted
+  condition: evt.type=usb and dev.type=storage
+  output: usb storage %dev.name
+  priority: MEDIUM
+- rule: kzc-persist-unit
+  desc: new systemd unit in persist paths
+  condition: fd.name startswith /etc/systemd/system
+  output: persist unit %fd.name by %proc.pname
+  priority: HIGH

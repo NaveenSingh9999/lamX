@@ -1,0 +1,20 @@
+[Unit]
+Description=opencode KZC head - 24/7 local security operator
+After=kzc-monitor.service network.target
+Wants=kzc-monitor.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/kzc
+ExecStart=/usr/bin/opencode serve --port 4096 --hostname 127.0.0.1
+Restart=always
+RestartSec=3
+RefuseManualStop=yes
+Environment=OPENCODE_CONFIG=/etc/opencode/opencode.jsonc
+MemoryMax=800M
+CPUQuota=80%
+
+[Install]
+WantedBy=multi-user.target

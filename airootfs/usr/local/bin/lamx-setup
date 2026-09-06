@@ -54,18 +54,19 @@ if yesno "Configure WiFi now?"; then
   read -rp "Press Enter after network is up."
 fi
 
-# 6b graphics drivers - ISO ships Intel-only, pick yours or skip
-GPU=$(whiptail --title "$TITLE" --menu "Graphics driver (ISO has Intel-only, skip keeps it light)" 14 60 5 \
+# 6b graphics drivers - ISO boots all CPUs with generic Mesa
+# pick your stack here, skip stays minimal, rerun lamx-setup anytime
+GPU=$(whiptail --title "$TITLE" --menu "Graphics stack (works on Intel and AMD CPUs)" 15 62 5 \
   "intel" "Intel iGPU, already installed" \
-  "amd" "AMD GPU, installs vulkan-radeon" \
-  "nvidia" "Nvidia GPU, installs open DKMS driver" \
+  "amd" "AMD GPU, Vulkan plus VA-API plus Xorg" \
+  "nvidia" "Nvidia GPU, open DKMS plus NVDEC plus Wayland" \
   "vm" "Virtual machine guest tools" \
   "skip" "Skip, stay minimal" 3>&1 1>&2 2>&3 || echo skip)
 case "$GPU" in
-  amd) pacman -S --noconfirm --needed vulkan-radeon xf86-video-amdgpu || true ;;
-  nvidia) pacman -S --noconfirm --needed nvidia-open-dkms nvidia-utils || true ;;
-  vm) pacman -S --noconfirm --needed spice-vdagent qemu-guest-agent || true ;;
-  *) echo "graphics: kept ISO Intel set" ;;
+  amd) pacman -S --noconfirm --needed vulkan-radeon libva-mesa-driver mesa-vdpau xf86-video-amdgpu xf86-video-ati || true ;;
+  nvidia) pacman -S --noconfirm --needed nvidia-open-dkms nvidia-utils libva-nvidia-driver || true ;;
+  vm) pacman -S --noconfirm --needed spice-vdagent qemu-guest-agent xf86-video-qxl || true ;;
+  *) echo "graphics: kept generic ISO set" ;;
 esac
 
 # 6c speed versus armor - unleashed disables CPU mitigations, weaker security

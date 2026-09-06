@@ -32,6 +32,31 @@ Reboot, then `sudo lamx-setup`, then `lamx-help`. Full walkthrough in [setup](do
 
 Rented Arch VM without wiping: `sudo ./scripts/convert-arch.sh`. Never run `install.sh` there.
 
+## Graphics and hardware acceleration
+
+One ISO boots every x86_64 machine. Both CPU microcodes ship natively, generic Mesa covers display out of the box, and the setup chooser installs your full stack or skips it.
+
+| GPU | Stack | Acceleration |
+|---|---|---|
+| <img src="https://cdn.simpleicons.org/intel/0068B5" width="20" alt="Intel"> Intel | Pre-installed: Mesa, Vulkan-Intel, Intel media driver, EGL Wayland | VA-API decode and encode, Vulkan |
+| <img src="https://cdn.simpleicons.org/amd/ED1C24" width="20" alt="AMD"> AMD | Chooser installs: Vulkan-Radeon, Mesa VA-API and VDPAU, amdgpu and ATI Xorg | VA-API, VDPAU, Vulkan |
+| <img src="https://cdn.simpleicons.org/nvidia/76B900" width="20" alt="Nvidia"> Nvidia | Chooser installs: open DKMS driver, utils, VA-API over NVDEC | NVDEC decode, Vulkan, Wayland via EGL |
+| VM | Chooser installs: spice-vdagent, guest agent, QXL | Paravirtual display |
+
+Media apps use it automatically: mpv hardware decode, PipeWire camera plugins, Hyprland and SwayFX GPU compositing.
+
+## Minimum requirements
+
+Estimated from the package set, measured boot plus desktop before release will confirm.
+
+| | Minimum | Recommended |
+|---|---|---|
+| CPU | Any 64-bit x86, 2 cores, Intel or AMD | 2015 or newer for v3 optimized repos |
+| RAM | 2 GB to boot live | 4 GB Sway daily, 8 GB Hyprland plus browser |
+| Disk | 12 GB install | 25 GB plus room for Snapper timelines |
+| Boot | UEFI | UEFI plus TPM 2.0 for passwordless disk |
+| Network | Needed once for install | Always on for updates and sync |
+
 ## Releases
 
 See [Releases](../../releases) for the ISO plus SHA256SUMS. Verify with `sha256sum`.
@@ -60,4 +85,4 @@ docs/                    setup, sessions, commands, features
 
 ## Status
 
-v0.1.0 released. Since then: stripped Intel-only base, GPU chooser, music stack, spotlight, hex icon, kernel round two, KZC v2 plus dashboard, phone link, quiet boot, xtreme mode, QEMU stack. Next release after VM boot validation.
+v0.1.0 released. Since then: lean all-CPU base, GPU chooser with full vendor stacks, music stack, spotlight, hex icon, kernel round two, KZC v2 plus dashboard, phone link, quiet boot, xtreme mode, QEMU stack. Next release after VM boot validation.

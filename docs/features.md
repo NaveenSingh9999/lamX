@@ -4,7 +4,7 @@
 
 ## Base
 
-CachyOS hardened kernel on vanilla Arch userland, x86_64, systemd. Intel-only ISO keeps downloads small. AMD and Nvidia arrive through the setup GPU chooser. Btrfs with zstd plus Snapper timelines, zram, single power stack, quiet fast boot with no network wait.
+CachyOS hardened kernel on vanilla Arch userland, x86_64, systemd. Lean base boots Intel and AMD CPUs out of the box, GPU vendor stacks install through the setup chooser. Btrfs with zstd plus Snapper timelines, zram, single power stack, quiet fast boot with no network wait.
 
 ## Desktop
 

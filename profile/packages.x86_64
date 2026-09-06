@@ -37,8 +37,9 @@ oath-toolkit
 libnewt
 qrencode
 
-# sway GUI, glassy ultra-light via SwayFX open source fork
-swayfx
+# sway GUI, glassy via transparent apps on vanilla sway for ISO
+# full blur via swayfx installed post-boot on target
+sway
 swaylock
 swayidle
 waybar
@@ -51,6 +52,11 @@ polkit
 polkit-gnome
 seatd
 ttf-jetbrains-mono-nerd
+ttf-dejavu
+iptables
+pipewire-jack
+pipewire-alsa
+crun
 
 # CLI daily driver
 yazi

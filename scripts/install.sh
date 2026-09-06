@@ -31,14 +31,14 @@ mount -o subvol=@home,compress=zstd,noatime /dev/mapper/lamxroot /mnt/home
 mount "$ESP" /mnt/boot
 
 pacstrap -K /mnt base linux-cachyos-hardened linux-firmware intel-ucode amd-ucode \
-  swayfx swaylock swayidle waybar wofi foot mako swaybg greetd greetd-tuigreet seatd polkit \
-  ttf-jetbrains-mono-nerd \
+  sway swaylock swayidle waybar wofi foot mako swaybg greetd greetd-tuigreet seatd polkit \
+  ttf-jetbrains-mono-nerd ttf-dejavu iptables pipewire-jack pipewire-alsa crun \
   networkmanager iwd pipewire pipewire-pulse wireplumber power-profiles-daemon \
   yazi neovim git curl fastfetch apparmor bubblewrap chrony openssh \
   tpm2-tss libfido2 pam-u2f oath-toolkit \
   audit bpftrace python libnotify polkit polkit-gnome
-# AUR extras post-install via chaotic-aur: swaylock-effects, opencode-bin
-arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swaylock-effects opencode-bin" || echo "AUR extras skipped, install manually later"
+# extras post-install via chaotic-aur: swayfx glassy, blur lock, opencode head
+arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swayfx swaylock-effects opencode-bin && /usr/local/bin/lamx-glassy on" || echo "extras skipped, install manually later"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")

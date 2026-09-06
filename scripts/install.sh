@@ -36,17 +36,18 @@ pacstrap -K /mnt base linux-cachyos-hardened linux-firmware intel-ucode amd-ucod
   networkmanager iwd pipewire pipewire-pulse wireplumber power-profiles-daemon \
   yazi neovim git curl fastfetch apparmor bubblewrap chrony openssh \
   tpm2-tss libfido2 pam-u2f oath-toolkit \
-  audit bpftrace python libnotify polkit polkit-gnome
+  audit bpftrace python libnotify polkit polkit-gnome \
+  qemu-desktop quickemu virt-manager libvirt edk2-ovmf swtpm dnsmasq bridge-utils
 # extras post-install via chaotic-aur: swayfx glassy, blur lock, opencode head
 arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swayfx swaylock-effects opencode-bin && /usr/local/bin/lamx-glassy on" || echo "extras skipped, install manually later"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")
 echo "lamxroot UUID=$UUID none tpm2-device=auto" > /mnt/etc/crypttab.initramfs
-arch-chroot /mnt useradd -m -G wheel,video,audio,seat -s /bin/bash "$USERN"
+arch-chroot /mnt useradd -m -G wheel,video,audio,seat,libvirt,kvm -s /bin/bash "$USERN"
 echo "$HOSTN" > /mnt/etc/hostname
 ln -sf /usr/share/zoneinfo/UTC /mnt/etc/localtime
-arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved auditd kzc-monitor kzc-notify opencode-kzc lamx-firstboot thermald tlp snapper-timeline.timer snapper-cleanup.timer
+arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved auditd kzc-monitor kzc-notify opencode-kzc lamx-firstboot thermald tlp snapper-timeline.timer snapper-cleanup.timer libvirtd
 arch-chroot /mnt systemctl mask bluetooth
 echo "Enroll TPM2+PIN now:"
 systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=yes --tpm2-pcrs=0+7 "$ROOT" || true

@@ -101,6 +101,16 @@ distrobox
 podman
 fuse-overlayfs
 
+# VMs - QEMU best stack: quickemu CLI-first plus virt-manager full GUI
+qemu-desktop
+quickemu
+virt-manager
+libvirt
+edk2-ovmf
+swtpm
+dnsmasq
+bridge-utils
+
 # 5 - recovery
 gnupg
 rsync

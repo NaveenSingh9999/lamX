@@ -10,6 +10,10 @@ commands:
   lamx-wipe /dev/disk                    secure erase, asks ERASE
   lamx-help                              this help
 
+vms:
+  quickemu --vm ubuntu.conf --display spice   fastest ISO test, QEMU direct
+  virt-manager                           full GUI manager with TPM and UEFI
+
 keys:
   boot: PIN + TPM. lock and sudo: touch phone key, fallback PIN + Aegis code.
   enroll phone: pamu2fcfg -u $USER >> /etc/pam-u2f/authfile

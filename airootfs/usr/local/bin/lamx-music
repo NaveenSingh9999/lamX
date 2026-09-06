@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# music - native streaming player, YouTube audio via mpv, no accounts
+# GUI uses wofi menu, TTY uses fzf. realtime audio via limits.d plus pipewire.
+# usage: music [search terms] | music --queue [terms] | music --subs
+if [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]; then
+  export YTFZF_MENU="wofi --show dmenu -p '>'"
+else
+  export YTFZF_MENU="fzf --prompt='> '"
+fi
+case "${1:-}" in
+  --queue|-q) shift; exec ytfzf -m -a "$@" ;;
+  --subs|-s) exec ytfzf -c S ;;
+  --help|-h) echo "usage: music [terms] | music -q [terms] | music -s"; exit 0 ;;
+  "") exec ytfzf -m ;;
+  *) exec ytfzf -m "$@" ;;
+esac

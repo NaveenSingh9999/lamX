@@ -54,6 +54,20 @@ if yesno "Configure WiFi now?"; then
   read -rp "Press Enter after network is up."
 fi
 
+# 6b graphics drivers - ISO ships Intel-only, pick yours or skip
+GPU=$(whiptail --title "$TITLE" --menu "Graphics driver (ISO has Intel-only, skip keeps it light)" 14 60 5 \
+  "intel" "Intel iGPU, already installed" \
+  "amd" "AMD GPU, installs vulkan-radeon" \
+  "nvidia" "Nvidia GPU, installs open DKMS driver" \
+  "vm" "Virtual machine guest tools" \
+  "skip" "Skip, stay minimal" 3>&1 1>&2 2>&3 || echo skip)
+case "$GPU" in
+  amd) pacman -S --noconfirm --needed vulkan-radeon xf86-video-amdgpu || true ;;
+  nvidia) pacman -S --noconfirm --needed nvidia-open-dkms nvidia-utils || true ;;
+  vm) pacman -S --noconfirm --needed spice-vdagent qemu-guest-agent || true ;;
+  *) echo "graphics: kept ISO Intel set" ;;
+esac
+
 # 7 snapshot baseline
 snapper -c root create-config / || true
 snapper -c root create --description "initial" || true

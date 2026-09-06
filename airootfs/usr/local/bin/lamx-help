@@ -10,6 +10,11 @@ commands:
   lamx-wipe /dev/disk                    secure erase, asks ERASE
   lamx-help                              this help
 
+music:
+  lamx-music [terms]                     stream YouTube audio, wofi in GUI
+  lamx-music -q [terms]                  queue mode, -s subscriptions
+  media keys play, next, prev work in both sessions. Mod+M opens music.
+
 vms:
   quickemu --vm ubuntu.conf --display spice   fastest ISO test, QEMU direct
   virt-manager                           full GUI manager with TPM and UEFI

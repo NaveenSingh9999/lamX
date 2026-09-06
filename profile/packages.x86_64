@@ -72,7 +72,6 @@ htop
 fastfetch
 networkmanager
 iwd
-wireless_tools
 wpa_supplicant
 smartmontools
 bubblewrap
@@ -89,12 +88,11 @@ slurp
 wl-clipboard
 power-profiles-daemon
 
-# 2 - updates and power
+# 2 - updates and power, single stack
 btrfs-progs
 snapper
 zram-generator
 thermald
-tlp
 
 # 4 - dev isolation
 distrobox
@@ -109,14 +107,14 @@ libvirt
 edk2-ovmf
 swtpm
 dnsmasq
-bridge-utils
 
 # 5 - recovery
 gnupg
 rsync
 cryptsetup
 
-# drivers - wifi, bluetooth, camera, gpu all-vendor
+# drivers - generic Intel iGPU in ISO for boot everywhere
+# AMD and Nvidia install on demand via setup GPU chooser
 linux-cachyos-hardened-headers
 linux-firmware-whence
 sof-firmware
@@ -125,20 +123,20 @@ usbutils
 pciutils
 mesa
 vulkan-icd-loader
-xf86-video-amdgpu
-xf86-video-ati
-xf86-video-intel
-xf86-video-nouveau
-vulkan-radeon
 vulkan-intel
-libva-intel-driver
 intel-media-driver
 egl-wayland
-nvidia-open-dkms
-nvidia-utils
 bluez
 bluez-utils
 kmod
 v4l-utils
 libcamera
 gst-plugin-pipewire
+
+# music - kernel-bound low-latency streaming, YouTube via mpv, no accounts
+mpv
+yt-dlp
+ytfzf
+fzf
+ffmpeg
+playerctl

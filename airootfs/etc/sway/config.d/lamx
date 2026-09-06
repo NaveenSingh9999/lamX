@@ -4,13 +4,12 @@ set $menu wofi --show drun
 set $mod Mod4
 
 output * bg #0a0e1a solid_color
-exec swww-daemon || true
-exec swww img /usr/share/backgrounds/lamx.png || true
+exec swaybg -o '*' -c '#0a0e1a'
 exec mako
 exec waybar
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec ~/.config/sway-welcome.sh
-exec swayidle -w timeout 60 'swaylock --screenshots --clock --indicator --effect-blur 7x5 --effect-vignette 0.5:0.5 --ring-color 3b82f6 --key-hl-color 60a5fa --inside-color 0a0a0a88 -f -c 0a0a0a' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock --screenshots --clock --indicator --effect-blur 7x5 -f -c 0a0a0a'
+exec swayidle -w timeout 60 'swaylock -f -c 0a0e1a' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock -f -c 0a0e1a'
 
 # effects - glass
 blur enable

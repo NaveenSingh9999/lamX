@@ -1,4 +1,6 @@
-# lamX minimal package set - CachyOS base + Sway, CLI-first
+# lamX package set - CachyOS base + SwayFX glassy, CLI-first
+# all packages must exist in official or CachyOS repos, no AUR here
+# AUR items like swaylock-effects and opencode-bin install post-boot via install.sh
 # mandatory for archiso
 mkinitcpio
 mkinitcpio-archiso
@@ -14,15 +16,12 @@ cachyos-keyring
 cachyos-mirrorlist
 cachyos-v3-mirrorlist
 audit
-aide
 apparmor
 bpftrace
 libnotify
-opencode-bin
 
 # boot
 syslinux
-systemd-boot
 efibootmgr
 dosfstools
 
@@ -32,26 +31,22 @@ greetd-tuigreet
 shadow
 systemd
 tpm2-tss
-systemd-cryptenroll
-fido2-tools
 libfido2
 pam-u2f
-pam-oath
 oath-toolkit
 libnewt
 qrencode
 
 # sway GUI, glassy ultra-light via SwayFX open source fork
 swayfx
-swaylock-effects
+swaylock
 swayidle
 waybar
 wofi
 foot
 mako
-swww
+swaybg
 xorg-xwayland
-greetd-tuigreet
 polkit
 polkit-gnome
 seatd
@@ -70,7 +65,6 @@ iwd
 wireless_tools
 wpa_supplicant
 smartmontools
-apparmor
 bubblewrap
 nftables
 chrony
@@ -117,17 +111,13 @@ xf86-video-intel
 xf86-video-nouveau
 vulkan-radeon
 vulkan-intel
-vulkan-nouveau
-libva-mesa-driver
 libva-intel-driver
 intel-media-driver
-mesa-vdpau
 egl-wayland
 nvidia-open-dkms
 nvidia-utils
 bluez
 bluez-utils
-rfkill
 kmod
 v4l-utils
 libcamera

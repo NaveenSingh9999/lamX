@@ -101,9 +101,8 @@ distrobox
 podman
 fuse-overlayfs
 
-# VMs - QEMU best stack: quickemu CLI-first plus virt-manager full GUI
+# VMs - QEMU best stack, quickemu lands post-install via chaotic-aur
 qemu-desktop
-quickemu
 virt-manager
 libvirt
 edk2-ovmf

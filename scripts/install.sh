@@ -31,7 +31,7 @@ mount -o subvol=@home,compress=zstd,noatime /dev/mapper/lamxroot /mnt/home
 mount "$ESP" /mnt/boot
 
 pacstrap -K /mnt base linux-cachyos-hardened linux-firmware intel-ucode amd-ucode \
-  sway swaylock swayidle waybar wofi foot mako swaybg greetd greetd-tuigreet seatd polkit \
+  sway swaylock swayidle hyprland hyprpaper xdg-desktop-portal-hyprland waybar wofi foot mako swaybg greetd greetd-tuigreet seatd polkit \
   ttf-jetbrains-mono-nerd ttf-dejavu iptables pipewire-jack pipewire-alsa crun \
   networkmanager iwd pipewire pipewire-pulse wireplumber power-profiles-daemon \
   yazi neovim git curl fastfetch apparmor bubblewrap chrony openssh \

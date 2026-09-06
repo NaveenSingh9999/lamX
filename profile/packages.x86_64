@@ -39,9 +39,13 @@ qrencode
 
 # sway GUI, glassy via transparent apps on vanilla sway for ISO
 # full blur via swayfx installed post-boot on target
+# hyprland optional session for super smooth animations
 sway
 swaylock
 swayidle
+hyprland
+hyprpaper
+xdg-desktop-portal-hyprland
 waybar
 wofi
 foot

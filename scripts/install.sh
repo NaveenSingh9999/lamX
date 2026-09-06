@@ -45,6 +45,7 @@ if [ -n "$ZEN_DESK" ]; then
   arch-chroot /mnt chown "$USERN:$USERN" /home/"$USERN"/.config/mimeapps.list 2>/dev/null || true
 fi
 arch-chroot /mnt bash -c "pacman -S --noconfirm freetype2-macos" 2>/dev/null || echo "macOS-like freetype skipped, stock stack already tuned"
+arch-chroot /mnt bash -c "pacman -S --noconfirm aide && mkdir -p /var/lib/aide && aide --init && mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz" 2>/dev/null || echo "aide skipped, KZC hashing still covers persist paths"
 
 # target needs the same repos or its kernel never updates
 grep -q "^\[cachyos\]" /mnt/etc/pacman.conf || printf '\n[cachyos]\nInclude = /etc/pacman.d/cachyos-mirrorlist\n' >> /mnt/etc/pacman.conf
@@ -90,8 +91,6 @@ timeout 3" > /mnt/boot/loader/loader.conf
 arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc lamx-firstboot thermald ananicy-cpp snapper-timeline.timer snapper-cleanup.timer fstrim.timer plocate-updatedb.timer libvirtd "syncthing@$USERN" fwupd-refresh.timer kzc-aide.timer
 arch-chroot /mnt systemctl mask bluetooth NetworkManager-wait-online.service
 arch-chroot /mnt systemctl --global enable kzc-digest.timer
-arch-chroot /mnt mkdir -p /var/lib/aide
-arch-chroot /mnt aide --init && arch-chroot /mnt mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz || true
 echo "Enroll TPM2+PIN now:"
 systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=yes --tpm2-pcrs=0+7 "$ROOT" || true
 echo "lamX installed. Boot menu holds lamX and lamX unleashed. Then run lamx-firstboot as $USERN."

@@ -1,25 +1,41 @@
-# KZC config - on-device only, no network, no LLM, no API
+# KZC config v3 - layered on-device detection, no network, no LLM, no API
 [core]
 state_dir = "/var/lib/kzc"
 log_file = "/var/log/kzc/kzc.log"
 alert_fifo = "/var/lib/kzc/alerts.fifo"
 baseline_db = "/var/lib/kzc/baseline.json"
+suspect_db = "/var/lib/kzc/suspects.json"
+rarity_db = "/var/lib/kzc/rarity.json"
 
 [ai]
-window_seconds = 300
+windows = [60, 300, 3600]
 z_threshold = 3.5
+ewma_alpha = 0.2
 min_samples = 50
+quorum = 2
 auto_quarantine = true
 auto_lock_session = true
+suppress_during_pacman = true
+
+[weights]
+first_seen_exec = 3
+first_seen_net = 3
+new_setuid = 4
+new_module = 2
+persist_change = 2
+apparmor_denial = 2
+priv_chain = 5
 
 [monitor]
 watch_exec = true
 watch_modules = true
 watch_usb = true
 watch_priv_esc = true
+watch_net = true
 watch_persist = ["/etc/systemd/system", "/etc/cron.d", "/etc/modprobe.d", "/boot"]
 
 [response]
 kill_on_shell_escape = true
 quarantine_dir = "/var/lib/kzc/quarantine"
 notify_user = true
+lock_on_critical = true

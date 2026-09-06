@@ -8,7 +8,7 @@ case "${1:-status}" in
     systemctl --user is-active syncthing 2>/dev/null || systemctl is-active "syncthing@$USER" 2>/dev/null || echo inactive
     curl -s -m 3 http://127.0.0.1:8384/rest/system/status -H "X-API-Key: $(grep -oPm1 '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml 2>/dev/null || grep -oPm1 '(?<=<apikey>)[^<]+' ~/.config/syncthing/config.xml 2>/dev/null)" 2>/dev/null | head -c 400
     echo ;;
-  ui) exec librewolf --new-window http://127.0.0.1:8384 ;;
+  ui) exec xdg-open http://127.0.0.1:8384 ;;
   pause) systemctl --user stop syncthing 2>/dev/null || sudo systemctl stop "syncthing@$USER"; echo paused ;;
   resume) systemctl --user start syncthing 2>/dev/null || sudo systemctl start "syncthing@$USER"; echo resumed ;;
   wake)

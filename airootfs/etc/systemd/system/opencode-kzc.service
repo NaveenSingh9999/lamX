@@ -8,6 +8,7 @@ StartLimitIntervalSec=0
 Type=simple
 User=root
 WorkingDirectory=/var/lib/kzc
+ExecStartPre=/bin/mkdir -p /var/lib/kzc
 ExecStart=/usr/bin/opencode serve --port 4096 --hostname 127.0.0.1
 Restart=always
 RestartSec=3

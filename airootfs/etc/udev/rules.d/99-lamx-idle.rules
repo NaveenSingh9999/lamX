@@ -1,0 +1,3 @@
+# phone-style auto idle on AC state change, only when user opted in
+SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/bin/sh -c '[ -f /etc/lamx/idle-auto ] && /usr/local/bin/lamx-idle on'"
+SUBSYSTEM=="power_supply", ATTR{online}=="1", RUN+="/bin/sh -c '[ -f /etc/lamx/idle-auto ] && /usr/local/bin/lamx-idle off'"

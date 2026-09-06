@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# idle - phone-style 24/7 mode. sips battery, keeps services alive.
+# usage: sudo lamx-idle on|off|status|auto [on|off]
+# auto hooks AC unplug and replug through udev, off by default
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
+FLAG="/etc/lamx/idle-auto"
+STATE="/run/lamx-idle"
+gov() { for f in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do echo "$1" > "$f" 2>/dev/null || true; done; }
+epp() { for f in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do echo "$1" > "$f" 2>/dev/null || true; done; }
+case "${1:-status}" in
+  on)
+    mkdir -p /etc/lamx
+    brightnessctl -s get > "$STATE-bright" 2>/dev/null || true
+    powerprofilesctl set power-saver 2>/dev/null || true
+    gov powersave; epp power
+    pkill -x mpvpaper 2>/dev/null || true
+    rfkill block bluetooth 2>/dev/null || true
+    iw dev | awk '/Interface/{print $2}' | while read -r i; do iw dev "$i" set power_save on 2>/dev/null || true; done
+    brightnessctl -s set 30% 2>/dev/null || true
+    echo on > "$STATE"; echo "idle on: powersave gov, still wallpaper, radios trimmed, screen dimmed" ;;
+  off)
+    powerprofilesctl set balanced 2>/dev/null || true
+    gov schedutil 2>/dev/null || gov powersave || true
+    epp balance_performance
+    rfkill unblock bluetooth 2>/dev/null || true
+    iw dev | awk '/Interface/{print $2}' | while read -r i; do iw dev "$i" set power_save off 2>/dev/null || true; done
+    [ -f "$STATE-bright" ] && brightnessctl -s set "$(cat "$STATE-bright")" 2>/dev/null || brightnessctl -s set 100% 2>/dev/null || true
+    sudo -u "${SUDO_USER:-root}" lamx-wallpaper auto 2>/dev/null || lamx-wallpaper auto 2>/dev/null || true
+    echo off > "$STATE"; echo "idle off: restored" ;;
+  auto)
+    mkdir -p /etc/lamx
+    case "${2:-}" in on) touch "$FLAG"; echo "auto idle on" ;; off) rm -f "$FLAG"; echo "auto idle off" ;; *) [ -f "$FLAG" ] && echo "auto: on" || echo "auto: off" ;; esac ;;
+  *) cat "$STATE" 2>/dev/null || echo off ;;
+esac

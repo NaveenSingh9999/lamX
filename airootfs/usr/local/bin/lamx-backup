@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # lamx-backup - encrypted Btrfs snapshot backup to USB or phone storage
-# usage: lamx-backup /run/media/usb
+# usage: sudo lamx-backup /run/media/usb
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
 DEST="${1:-}"
-[ -n "$DEST" ] || { echo "usage: lamx-backup /mnt/backup"; exit 1; }
+[ -n "$DEST" ] || { echo "usage: sudo lamx-backup /mnt/backup"; exit 1; }
+mkdir -p /.snapshots
+SNAP="/.snapshots/lamx-$(date +%Y%m%d-%H%M)"
 SNAP="/.snapshots/lamx-$(date +%Y%m%d-%H%M)"
 btrfs subvolume snapshot -r / "$SNAP"
 OUT="$DEST/lamx-$(date +%Y%m%d-%H%M).img.gpg"

@@ -1,4 +1,5 @@
-# KZC runtime rules - Falco-compatible, open source detections
+# KZC runtime rules - reference set, mirrored live in the monitor CHAIN table
+# Falco-compatible for future use, enforced today by kzc-monitor
 # privilege escalation
 - rule: kzc-shell-escape
   desc: shell spawned from unexpected parent

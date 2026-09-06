@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""KZC monitor v2 - on-device statistical AI, no LLM, no network, no API.
-Upgrades: allowlist, suspect scoring with decay, alert rate-limit,
-quarantine manifest with restore, self-integrity check.
-Stack: auditd + AppArmor + this daemon. Runs 24/7, self-protecting."""
+"""KZC monitor v3 - layered on-device detection. No LLM, no network, no API.
+Sensors: proc scan, module set, persist hashes, USB, net conns, audit denials.
+Brain: multi-window EWMA baselines, rarity store, priv-chain rules, quorum.
+Act: score, quarantine with manifest, kill escapes, lock session on critical."""
 import json
 import os
 import sys
@@ -12,20 +12,29 @@ import collections
 import subprocess
 import math
 
-STATE = "/var/lib/kzc/baseline.json"
-SUSPECTS = "/var/lib/kzc/suspects.json"
+BASE = "/var/lib/kzc"
+STATE = f"{BASE}/baseline.json"
+SUSPECTS = f"{BASE}/suspects.json"
+RARITY = f"{BASE}/rarity.json"
 LOG = "/var/log/kzc/kzc.log"
-FIFO = "/var/lib/kzc/alerts.fifo"
-QUAR = "/var/lib/kzc/quarantine"
-QMAN = "/var/lib/kzc/quarantine.json"
+FIFO = f"{BASE}/alerts.fifo"
+QUAR = f"{BASE}/quarantine"
+QMAN = f"{BASE}/quarantine.json"
 ALLOW = "/etc/kzc/allowlist.conf"
 SELF = "/usr/local/bin/kzc-monitor"
+AUDIT_LOG = "/var/log/audit/audit.log"
 
 PERSIST = ["/etc/systemd/system", "/etc/cron.d", "/etc/modprobe.d", "/boot"]
-WINDOW = 10
+WINDOWS = {"1m": 60, "5m": 300, "1h": 3600}
 Z_THRESH = 3.5
+ALPHA = 0.2
+QUORUM = 2
 RATE_LIMIT = 300
-DECAY_EVERY = 6
+CHAIN = [
+    ({"librewolf", "wofi", "waybar"}, {"bash", "sh", "zsh"}, 5, "shell escape from GUI"),
+    ({"bash", "sh", "zsh"}, {"sudo", "doas"}, 2, "priv escalation after shell"),
+    ({"sudo", "doas", "pkexec"}, {"modprobe", "insmod"}, 5, "module load via priv"),
+]
 
 _last_alert = {}
 
@@ -59,6 +68,12 @@ def alert(text, key=None):
     except Exception:
         pass
 
+def lock_session():
+    try:
+        subprocess.run(["loginctl", "lock-sessions"], timeout=5)
+    except Exception:
+        pass
+
 def load_json(p, default):
     try:
         with open(p) as f:
@@ -73,12 +88,8 @@ def save_json(p, obj):
         json.dump(obj, f)
     os.rename(tmp, p)
 
-def load_allow():
-    try:
-        with open(ALLOW) as f:
-            return {l.strip() for l in f if l.strip() and not l.startswith("#")}
-    except Exception:
-        return set()
+def pacman_active():
+    return os.path.exists("/var/lib/pacman/db.lck")
 
 def proc_snapshot():
     pairs = collections.Counter()
@@ -102,6 +113,20 @@ def proc_snapshot():
         except Exception:
             continue
     return pairs, pids
+
+def net_conns():
+    out = set()
+    for proto in ("tcp", "tcp6", "udp", "udp6"):
+        try:
+            with open(f"/proc/net/{proto}") as f:
+                lines = f.read().splitlines()[1:]
+            for ln in lines:
+                p = ln.split()
+                if len(p) > 3 and p[3] == "01":
+                    out.add(p[2])
+        except Exception:
+            pass
+    return out
 
 def file_hash(p):
     try:
@@ -136,8 +161,7 @@ def quarantine(p):
     try:
         os.makedirs(QUAR, exist_ok=True)
         man = load_json(QMAN, {})
-        base = os.path.basename(p)
-        dst = os.path.join(QUAR, f"{int(time.time())}-{base}")
+        dst = os.path.join(QUAR, f"{int(time.time())}-{os.path.basename(p)}")
         os.chmod(p, 0)
         os.rename(p, dst)
         man[dst] = p
@@ -146,34 +170,68 @@ def quarantine(p):
     except Exception as e:
         log(f"quarantine fail {p}: {e}")
 
-def bump_suspect(suspects, key, weight=1):
-    s = suspects.get(key, {"score": 0, "count": 0, "first": time.time(), "last": 0})
-    s["score"] += weight
-    s["count"] += 1
-    s["last"] = time.time()
-    suspects[key] = s
-    return s["score"]
+def audit_denials(pos):
+    hits = []
+    try:
+        with open(AUDIT_LOG, "rb") as f:
+            f.seek(0, 2)
+            size = f.tell()
+            f.seek(max(0, size - 200000))
+            data = f.read().decode(errors="replace")
+        for ln in data.splitlines():
+            if "apparmor=\"DENIED\"" in ln or "avc:  denied" in ln:
+                hits.append(ln[-160:])
+        return hits, size
+    except Exception:
+        return [], pos
+
+class EWMA:
+    def __init__(self):
+        self.mean = 0.0
+        self.var = 1.0
+        self.n = 0
+    def update(self, x):
+        self.n += 1
+        d = x - self.mean
+        self.mean += ALPHA * d
+        self.var = (1 - ALPHA) * (self.var + ALPHA * d * d)
+    def z(self, x):
+        s = math.sqrt(self.var)
+        return 0 if s == 0 else abs(x - self.mean) / s
 
 def main():
     baseline = load_json(STATE, {})
     suspects = load_json(SUSPECTS, {})
+    rarity = load_json(RARITY, {"exec": [], "net": []})
     counts = collections.Counter(baseline.get("exec_counts", {}))
+    ewma = {w: collections.defaultdict(EWMA) for w in WINDOWS}
+    for w, table in baseline.get("ewma", {}).items():
+        for k, v in table.items():
+            e = EWMA()
+            e.mean, e.var, e.n = v
+            ewma[w][k] = e
     samples = baseline.get("samples", 0)
     fknown = baseline.get("files", {})
-    allow = load_allow()
+    try:
+        with open(ALLOW) as f:
+            allow = {l.strip() for l in f if l.strip() and not l.startswith("#")}
+    except Exception:
+        allow = set()
     self_hash = file_hash(SELF)
-    mod_known = set()
     try:
         with open("/proc/modules") as f:
             mod_known = set(l.split()[0] for l in f)
     except Exception:
-        pass
-    log("KZC v2 start, samples=%d suspects=%d" % (samples, len(suspects)))
+        mod_known = set()
+    net_known = net_conns()
+    audit_pos = 0
+    log(f"KZC v3 start samples={samples} suspects={len(suspects)}")
     tick = 0
     while True:
         try:
             tick += 1
-            if tick % DECAY_EVERY == 0:
+            quiet = pacman_active()
+            if tick % 36 == 0:
                 for k in list(suspects):
                     suspects[k]["score"] = max(0, suspects[k]["score"] - 1)
                     if suspects[k]["score"] == 0 and time.time() - suspects[k]["last"] > 86400:
@@ -182,41 +240,70 @@ def main():
                 alert("KZC binary modified, possible tampering", key="self")
             pairs, pids = proc_snapshot()
             samples += 1
-            for pair, c in pairs.items():
-                key = f"{pair[0]}>{pair[1]}"
-                if key in allow:
-                    continue
-                prev = counts.get(key, 0)
-                mean = prev / max(samples, 1)
-                std = math.sqrt(mean + 1)
-                z = 0 if std == 0 else abs(c - mean) / std
-                counts[key] = prev + c
-                if samples > 50 and z > Z_THRESH and c >= 2:
-                    score = bump_suspect(suspects, key)
-                    alert(f"anomaly exec {key} x{c} z={z:.1f} score={score}", key=f"exec:{key}")
-                    if pair[0] in ("librewolf", "wofi", "waybar") and pair[1] in ("bash", "sh", "zsh"):
-                        for pid, (pn, n) in pids.items():
-                            if pn == pair[0] and n == pair[1]:
-                                try:
-                                    os.kill(int(pid), 9)
-                                    log(f"killed {pid} {key}")
-                                except Exception:
-                                    pass
+            signals = collections.Counter()
+            if not quiet:
+                for pair, c in pairs.items():
+                    key = f"{pair[0]}>{pair[1]}"
+                    if key in allow:
+                        continue
+                    if key not in rarity["exec"]:
+                        rarity["exec"].append(key)
+                        signals[key] += 3
+                        if samples > 20:
+                            alert(f"first-seen exec {key}", key=f"fs:{key}")
+                    for w in WINDOWS:
+                        e = ewma[w][key]
+                        z = e.z(c)
+                        e.update(c)
+                        if samples > 50 and z > Z_THRESH and c >= 2:
+                            signals[key] += 2
+                    prev = counts.get(key, 0)
+                    counts[key] = prev + c
+                for parents, childs, wgt, label in CHAIN:
+                    for (pn, n), c in pairs.items():
+                        if pn in parents and n in childs:
+                            key = f"chain:{pn}>{n}"
+                            signals[key] += wgt
+                            alert(f"priv chain {label}: {pn}>{n}", key=key)
+                            if n in ("bash", "sh", "zsh") and pn in ("librewolf", "wofi", "waybar"):
+                                for pid, (pp, nn) in pids.items():
+                                    if pp == pn and nn == n:
+                                        try:
+                                            os.kill(int(pid), 9)
+                                        except Exception:
+                                            pass
             try:
                 with open("/proc/modules") as f:
                     cur = set(l.split()[0] for l in f)
                 for m in cur - mod_known:
                     if m not in ("uvcvideo", "btusb", "iwlwifi", "nvidia"):
-                        bump_suspect(suspects, f"module:{m}", 2)
+                        signals[f"module:{m}"] += 2
                         alert(f"new kernel module: {m}", key=f"mod:{m}")
                 mod_known = cur
             except Exception:
                 pass
+            for remote in net_conns() - net_known:
+                net_known.add(remote)
+                if remote not in rarity["net"]:
+                    rarity["net"].append(remote)
+                    signals[f"net:{remote}"] += 3
             for ch in scan_persist(fknown):
-                bump_suspect(suspects, ch, 2)
-                alert(f"persist change {ch}", key=f"persist:{ch}")
+                signals[ch] += 2
+                if not quiet:
+                    alert(f"persist change {ch}", key=f"persist:{ch}")
                 if ch.startswith("new:") and ch.endswith((".sh", ".service", ".timer")):
                     quarantine(ch[4:])
+            for hit in audit_denials(audit_pos)[0][-5:]:
+                signals["apparmor"] += 2
+                alert(f"confinement denial: {hit}", key=f"den:{hash(hit) % 9999}")
+            for key, pts in signals.items():
+                s = suspects.get(key, {"score": 0, "count": 0, "first": time.time(), "last": 0})
+                s["score"] += pts
+                s["count"] += 1
+                s["last"] = time.time()
+                suspects[key] = s
+                if pts >= QUORUM * 2 and "chain" in key:
+                    lock_session()
             try:
                 for dev in os.listdir("/sys/block"):
                     if dev.startswith(("sd", "nvme")):
@@ -229,12 +316,14 @@ def main():
             except Exception:
                 pass
             if samples % 12 == 0:
-                save_json(STATE, {"exec_counts": dict(counts), "samples": samples, "files": fknown})
+                save_json(STATE, {"exec_counts": dict(counts), "samples": samples, "files": fknown,
+                                  "ewma": {w: {k: [e.mean, e.var, e.n] for k, e in t.items()} for w, t in ewma.items()}})
                 save_json(SUSPECTS, suspects)
-            time.sleep(WINDOW)
+                save_json(RARITY, {"exec": rarity["exec"][-5000:], "net": rarity["net"][-2000:]})
+            time.sleep(10)
         except Exception as e:
             log(f"loop err: {e}")
-            time.sleep(WINDOW)
+            time.sleep(10)
 
 if __name__ == "__main__":
     sys.exit(main())

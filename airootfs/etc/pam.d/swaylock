@@ -1,0 +1,7 @@
+#%PAM-1.0
+# swaylock - key first, system passwords still work without enrolled keys
+auth sufficient pam_u2f.so authfile=/etc/pam-u2f/authfile cue no-user-touch openasuser
+auth [success=1 default=ignore] pam_oath.so usersfile=/etc/users.oath window=30 digits=6
+auth include login
+account include login
+session include login

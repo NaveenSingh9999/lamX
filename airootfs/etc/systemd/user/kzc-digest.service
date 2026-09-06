@@ -1,0 +1,6 @@
+[Unit]
+Description=KZC morning digest
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/kzc-digest

@@ -22,7 +22,7 @@ lsblk
 sudo ./scripts/install.sh /dev/nvme0n1 lamx
 ```
 
-What happens: GPT with ESP plus LUKS2 root, Btrfs `@` and `@home` with zstd, pacstrap of the Intel-only base, single user in wheel video audio seat libvirt kvm, tuned initramfs regenerated, systemd-boot with two entries (`lamX` default, `lamX unleashed` without CPU mitigations), services enabled, Bluetooth and boot network-wait masked, TPM2 plus PIN enrolled.
+What happens: GPT with ESP plus LUKS2 root, Btrfs `@` and `@home` with zstd, pacstrap of the lean all-CPU base, single user in wheel video audio seat libvirt kvm with zsh, tuned initramfs regenerated, systemd-boot with two entries (`lamX` default, `lamX unleashed` without CPU mitigations), services enabled, Bluetooth and boot network-wait masked, TPM2 plus PIN enrolled, initial login PIN set, wheel sudo enabled.
 
 Type your LUKS passphrase once when asked.
 
@@ -57,7 +57,7 @@ Pick Sway for battery or Hyprland for animations at login. Details in [sessions]
 ```bash
 lamx-help
 lamx list
-systemctl is-active kzc-monitor kzc-notify auditd
+systemctl is-active kzc-monitor kzc-head auditd
 fastfetch   # shows the lamX mark
 ```
 

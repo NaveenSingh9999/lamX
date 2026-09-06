@@ -41,23 +41,20 @@ echo "overlay copied, excluded: ${EXCL[*]}"
 
 echo "[5/7] user groups and shell defaults"
 usermod -aG wheel,video,audio,seat,libvirt,kvm "$USERN" || true
-cp -rn /etc/skel/.bashrc "/home/$USERN/" 2>/dev/null || true
-mkdir -p "/home/$USERN/.config"
-cp -rn /etc/skel/.config/sway-welcome.sh "/home/$USERN/.config/" 2>/dev/null || true
-chown -R "$USERN:$USERN" "/home/$USERN/.config" 2>/dev/null || true
+cp -rn /etc/skel/. "/home/$USERN/" 2>/dev/null || true
+chown -R "$USERN:$USERN" "/home/$USERN" 2>/dev/null || true
 grep -q "config.d/fx" /etc/sway/config.d/lamx 2>/dev/null || echo "include /etc/sway/config.d/fx" >> /etc/sway/config.d/lamx || true
 
 echo "[6/7] enable services (console only, SSH unaffected)"
-systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-notify opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true
-systemctl enable snapper-timeline.timer snapper-cleanup.timer 2>/dev/null || true
+systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true
+systemctl enable snapper-timeline.timer snapper-cleanup.timer fwupd-refresh.timer kzc-aide.timer fstrim.timer plocate-updatedb.timer 2>/dev/null || true
 snapper -c root create-config / 2>/dev/null || echo "snapper skipped, not btrfs"
 systemctl mask bluetooth NetworkManager-wait-online.service 2>/dev/null || true
+systemctl --global enable kzc-digest.timer 2>/dev/null || true
 
-echo "[7/7] passwordless templates staged, NOT activated"
-echo "To avoid locking sudo on a rented VM, PAM wiring is manual:"
+echo "[7/7] passwordless: same wiring as installer, see lamx-setup pam-wire"
 echo "  1. test in a second SSH session before logging out"
-echo "  2. enroll phone: pamu2fcfg -u $USERN >> /etc/pam-u2f/authfile"
-echo "  3. wire sudo only after backup session works, see airootfs/etc/pam.d/sudo-lamx"
+echo "  2. run lamx-setup to enroll keys and wire sudo, greetd, lock"
 echo ""
 echo "done. backup at $BACKUP"
 echo "reboot only if console access is available, SSH survives without reboot"

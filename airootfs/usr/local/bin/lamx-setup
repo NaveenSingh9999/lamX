@@ -27,6 +27,11 @@ HN=$(ask "Device name" "device")
 mkdir -p /etc/pam-u2f
 touch /etc/pam-u2f/authfile
 chmod 600 /etc/pam-u2f/authfile
+# 4b wire passwordless into login, sudo, lock - backups first, passwords keep working
+# shellcheck disable=SC1091
+. /usr/local/lib/lamx-pam.sh
+pam-wire /etc/pam.d/sudo
+pam-wire /etc/pam.d/greetd
 if [ ! -f /etc/users.oath ]; then
   SECRET=$(head -c 20 /dev/urandom | base32 | tr -d '=' | cut -c1-32)
   echo "HOTP/T30/6 $USERN - $SECRET" > /etc/users.oath

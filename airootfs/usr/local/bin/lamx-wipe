@@ -2,6 +2,7 @@
 set -euo pipefail
 # lamx-wipe - secure erase, requires typed confirmation
 # usage: sudo lamx-wipe /dev/nvme0n1
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
 DISK="${1:-}"
 [ -n "$DISK" ] || { echo "usage: sudo lamx-wipe /dev/disk"; exit 1; }
 echo "THIS DESTROYS ALL DATA ON $DISK"

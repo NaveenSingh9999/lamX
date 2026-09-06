@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""kzc-digest - one morning summary instead of per-event pings."""
+import json
+import os
+import subprocess
+import time
+
+BASE = "/var/lib/kzc"
+
+def load(p, d):
+    try:
+        with open(p) as f:
+            return json.load(f)
+    except Exception:
+        return d
+
+def main():
+    sus = load(f"{BASE}/suspects.json", {})
+    man = load(f"{BASE}/quarantine.json", {})
+    try:
+        with open("/var/log/kzc/decisions.log") as f:
+            lines = f.read().splitlines()
+    except Exception:
+        lines = []
+    day = [l for l in lines if "ALERT" in l or l.startswith(time.strftime("%Y-%m-%d"))]
+    top = sorted(sus.items(), key=lambda i: -i[1]["score"])[:3]
+    if not top and not man and not day:
+        msg = "Quiet. Nothing suspicious in 24h."
+    else:
+        parts = [f"{len(sus)} suspects", f"{len(man)} quarantined", f"{len(day)} decisions"]
+        if top:
+            parts.append("top: " + ", ".join(f"{k}({v['score']})" for k, v in top))
+        msg = ". ".join(parts)
+    try:
+        subprocess.run(["notify-send", "-u", "normal", "Morning digest", msg], timeout=5)
+    except Exception:
+        pass
+    print(msg)
+
+if __name__ == "__main__":
+    main()

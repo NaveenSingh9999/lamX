@@ -40,5 +40,7 @@ EOF
 import json
 for d,s in json.load(open('$QMAN')).items(): print(f'{d}  <-  {s}')" 2>/dev/null || echo "empty" ;;
   logs) tail -n "${2:-30}" "$LOG" 2>/dev/null || echo "no log yet" ;;
-  *) echo "usage: lamx-kzc status|suspects|allow|restore|logs|quarantine"; exit 1 ;;
+  decisions) tail -n "${2:-20}" /var/log/kzc/decisions.log 2>/dev/null || echo "no decisions yet" ;;
+  trace) sudo bpftrace /etc/kzc/execsnoop.bt 2>/dev/null || echo "needs bpftrace plus BTF kernel" ;;
+  *) echo "usage: lamx-kzc status|suspects|allow|restore|logs|decisions|quarantine|trace"; exit 1 ;;
 esac

@@ -1,0 +1,7 @@
+[Unit]
+Description=KZC weekly integrity check
+RefuseManualStop=yes
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'aide --check > /var/log/kzc/aide-report.txt 2>&1 || logger -t kzc-aide "AIDE differences found, see report"'

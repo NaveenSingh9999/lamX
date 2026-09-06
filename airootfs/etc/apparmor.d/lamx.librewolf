@@ -1,0 +1,15 @@
+# complain-mode profile: denials feed KZC signals, nothing breaks
+#include <tunables/global>
+/usr/lib/librewolf/librewolf flags=(complain) {
+  #include <abstractions/base>
+  #include <abstractions/fonts>
+  #include <abstractions/audio>
+  #include <abstractions/gnome>
+  #include <abstractions/nameservice>
+  /usr/lib/librewolf/** mr,
+  owner @{HOME}/** rw,
+  /tmp/** rw,
+  deny /etc/shadow r,
+  deny /etc/kzc/** r,
+  deny /var/lib/kzc/** r,
+}

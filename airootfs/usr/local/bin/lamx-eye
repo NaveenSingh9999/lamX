@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# eye - kernel-level mic, camera, and casting indicators
+# sources: PipeWire graph (streams) plus /dev handle holders, debounced
+# usage: lamx-eye | lamx-eye --watch | lamx-eye --json
+STATE_DIR="${XDG_RUNTIME_DIR:-/tmp}/lamx-eye"
+mkdir -p "$STATE_DIR"
+
+pw_apps() { # $1 = Audio/Source|Video/Source -> owning app names
+  pw-dump 2>/dev/null | python3 -c "
+import json,sys
+want='$1'
+try: objs=json.load(sys.stdin)
+except Exception: sys.exit()
+for o in objs:
+    i=o.get('info',{})
+    if i.get('media-class')!=want: continue
+    if i.get('state')!='running': continue
+    props=i.get('props',{})
+    print(props.get('application.name') or props.get('node.name') or '?')"
+}
+
+dev_apps() { # $1 = glob -> process names holding it
+  for d in $1; do
+    [ -e "$d" ] || continue
+    fuser "$d" 2>/dev/null | tr ' ' '\n' | while read -r pid; do
+      [ -n "$pid" ] && ps -o comm= -p "$pid" 2>/dev/null
+    done
+  done | sort -u
+}
+
+confirm() { # $1 key, $2... apps -> print apps only on 2nd consecutive hit
+  local f="$STATE_DIR/$1" cur
+  cur=$(printf '%s\n' "$@" | sort -u | tr '\n' ' ')
+  if [ -f "$f" ] && [ "$(cat "$f")" = "$cur" ] && [ -n "$cur" ]; then
+    echo "$cur"
+  fi
+  echo "$cur" > "$f"
+}
+
+mic=$(confirm mic $(pw_apps Audio/Source) $(dev_apps '/dev/snd/pcmC*D*c'))
+cam=$(confirm cam $(pw_apps Video/Source) $(dev_apps '/dev/video*'))
+cast=""
+if [ -n "$cam" ]; then
+  while read -r app; do
+    case "$app" in
+      *portal*|*grim*|*slurp*|*obs*|*recorder*|*chrome*|*firefox*|*librewolf*) cast="$cast $app" ;;
+    esac
+  done <<< "$cam"
+  cast=$(echo "$cast" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+fi
+
+case "${1:-}" in
+  --watch) watch -n2 -t "$0" ;;
+  --json)
+    t=""; [ -n "$mic" ] && t="$t "; [ -n "$cam" ] && t="$t "; [ -n "$cast" ] && t="$t 喇"
+    [ -z "$t" ] && t=""
+    tip="mic: ${mic:-idle} | cam: ${cam:-idle} | cast: ${cast:-idle}"
+    printf '{"text":"%s","tooltip":"%s","class":"%s"}\n' "$t" "$tip" "$([ -n "$mic$cam" ] && echo active || echo idle)" ;;
+  *) echo "mic : ${mic:-idle}"; echo "cam : ${cam:-idle}"; echo "cast: ${cast:-idle}" ;;
+esac
+[ -n "$mic$cam" ] && logger -t lamx-eye "active mic=[$mic] cam=[$cam] cast=[$cast]" 2>/dev/null || true

@@ -1,0 +1,11 @@
+NAME="lamX"
+PRETTY_NAME="lamX"
+ID=lamx
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;5;39"
+HOME_URL="https://github.com/NaveenSingh9999/lamX"
+DOCUMENTATION_URL="https://github.com/NaveenSingh9999/lamX/tree/main/docs"
+SUPPORT_URL="https://github.com/NaveenSingh9999/lamX/issues"
+BUG_REPORT_URL="https://github.com/NaveenSingh9999/lamX/issues"
+LOGO=lamx

@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""kzc-head - headless decision head. Warns, asks, acts.
+Policy offline in milliseconds. Every decision is queued for the
+opencode kzc-head agent to audit, and offered live when KZC_CONSULT=1.
+Thresholds: score>=8 act at once, 3-7 ask the user, below logs only."""
+import json
+import os
+import subprocess
+import time
+import urllib.request
+
+BASE = "/var/lib/kzc"
+FIFO = f"{BASE}/alerts.fifo"
+SUSPECTS = f"{BASE}/suspects.json"
+QMAN = f"{BASE}/quarantine.json"
+REVIEW = f"{BASE}/review-queue.jsonl"
+DECISIONS = "/var/log/kzc/decisions.log"
+CONSULT_URL = "http://127.0.0.1:4096"
+CONSULT = os.environ.get("KZC_CONSULT", "0") == "1"
+
+def log(msg):
+    os.makedirs(os.path.dirname(DECISIONS), exist_ok=True)
+    with open(DECISIONS, "a") as f:
+        f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} {msg}\n")
+
+def notify(text):
+    try:
+        subprocess.run(["notify-send", "-u", "critical", "KZC head", text], timeout=3)
+    except Exception:
+        pass
+    try:
+        subprocess.run(["wall", f"KZC head: {text}"], timeout=3,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+def ask_user(title, body, options, timeout="90", default="Watch"):
+    try:
+        r = subprocess.run(["lamx-ask", title, body, timeout, default] + options,
+                           capture_output=True, text=True, timeout=int(timeout) + 5)
+        return r.stdout.strip() or default
+    except Exception:
+        return default
+
+def queue_review(decision):
+    try:
+        os.makedirs(BASE, exist_ok=True)
+        with open(REVIEW, "a") as f:
+            f.write(json.dumps(decision) + "\n")
+    except Exception:
+        pass
+
+def consult_opencode(alert):
+    """Live verdict from headless opencode head. None on any failure."""
+    if not CONSULT:
+        return None
+    try:
+        req = urllib.request.Request(
+            f"{CONSULT_URL}/session",
+            data=b"{}", headers={"Content-Type": "application/json"})
+        sid = json.load(urllib.request.urlopen(req, timeout=5))["id"]
+        body = json.dumps({"parts": [{"type": "text",
+            "text": f"Triage this device alert, reply with one word ALLOW QUARANTINE KILL or ASK plus a short reason: {alert}"}],
+            "model": {"modelID": "kzc-head", "providerID": "opencode"}}).encode()
+        req = urllib.request.Request(f"{CONSULT_URL}/session/{sid}/message",
+            data=body, headers={"Content-Type": "application/json"})
+        res = json.load(urllib.request.urlopen(req, timeout=15))
+        for part in res.get("parts", []):
+            if part.get("type") == "text" and part.get("text"):
+                return part["text"]
+    except Exception as e:
+        log(f"consult unavailable: {e}")
+    return None
+
+def quarantine(path):
+    try:
+        os.makedirs(f"{BASE}/quarantine", exist_ok=True)
+        man = json.load(open(QMAN)) if os.path.exists(QMAN) else {}
+        dst = os.path.join(f"{BASE}/quarantine", f"{int(time.time())}-{os.path.basename(path)}")
+        os.chmod(path, 0)
+        os.rename(path, dst)
+        man[dst] = path
+        json.dump(man, open(QMAN, "w"))
+    except Exception as e:
+        log(f"head quarantine fail {path}: {e}")
+
+def decide(alert):
+    suspects = json.load(open(SUSPECTS)) if os.path.exists(SUSPECTS) else {}
+    score = 0
+    for k, v in suspects.items():
+        if k.split(":")[-1] in alert or k in alert:
+            score = max(score, v["score"])
+    verdict = consult_opencode(alert)
+    if verdict:
+        word = verdict.split()[0].upper()
+        if word in ("ALLOW", "QUARANTINE", "KILL", "ASK"):
+            return word, f"opencode:{verdict[:120]}"
+    if score >= 8 or "chain" in alert:
+        return "ACT", f"policy:critical score={score}"
+    if score >= 3:
+        return "ASK", f"policy:medium score={score}"
+    return "WATCH", f"policy:low score={score}"
+
+def main():
+    os.makedirs(BASE, exist_ok=True)
+    if not os.path.exists(FIFO):
+        os.mkfifo(FIFO)
+    log("kzc-head start")
+    while True:
+        try:
+            with open(FIFO) as f:
+                for line in f:
+                    alert = line.strip()
+                    if not alert:
+                        continue
+                    action, why = decide(alert)
+                    rec = {"t": time.time(), "alert": alert, "action": action, "why": why}
+                    if action == "ACT":
+                        notify(f"Acted: {alert}")
+                        if alert.startswith("persist change new:"):
+                            quarantine(alert.split("new:", 1)[1])
+                    elif action == "ASK":
+                        if os.environ.get("WAYLAND_DISPLAY") or os.environ.get("DISPLAY"):
+                            choice = ask_user("Security decision", alert, "90", "Watch",
+                                              ["Quarantine", "Allow always", "Allow once", "Watch"])
+                        else:
+                            notify(f"Decide in dashboard: {alert}")
+                            choice = "Watch"
+                        rec["choice"] = choice
+                        if choice == "Allow always":
+                            key = alert.split()[-1]
+                            with open("/etc/kzc/allowlist.conf", "a") as af:
+                                af.write(key + "\n")
+                        elif choice == "Quarantine" and "new:" in alert:
+                            quarantine(alert.split("new:", 1)[1])
+                        notify(f"Decision {choice}: {alert}")
+                    log(f"{action} {alert} [{why}]")
+                    queue_review(rec)
+        except Exception as e:
+            log(f"head loop err: {e}")
+            time.sleep(5)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,5 @@
+/* on-demand exec forensics for lamx-kzc trace */
+tracepoint:syscalls:sys_enter_execve
+{
+  printf("%s > %s %s\n", comm, curtask->parent->comm, str(args->filename));
+}

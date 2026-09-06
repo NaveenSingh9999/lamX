@@ -1,0 +1,9 @@
+[Unit]
+Description=KZC weekly integrity check
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+
+[Install]
+WantedBy=timers.target

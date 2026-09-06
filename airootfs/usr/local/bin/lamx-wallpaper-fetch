@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# fetch more live loops from the open internet into the engine slideshow
+# usage: lamx-wallpaper-fetch <page-or-file-url>...
+# works with Pexels, Coverr, Pixabay pages via yt-dlp
+# copyright: only fetch loops licensed for reuse, never redistribute them
+[ -n "${1:-}" ] || { echo "usage: lamx-wallpaper-fetch <url>..."; exit 1; }
+DEST="$HOME/Pictures/Wallpapers/live"
+mkdir -p "$DEST"
+for u in "$@"; do
+  yt-dlp -f 'bv*[height<=720]+ba/b[height<=720]/b' --no-playlist -o "$DEST/%(title).40s.%(ext)s" "$u"
+done
+echo "done. run: lamx-wallpaper"

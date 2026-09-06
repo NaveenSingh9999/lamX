@@ -18,17 +18,21 @@ cachyos-v3-mirrorlist
 audit
 apparmor
 bpftrace
+aide
+fwupd
 libnotify
 
 # boot
 syslinux
 efibootmgr
 dosfstools
+parted
 
 # single-user + login (passwordless-ready, no passwords stored)
 greetd
 greetd-tuigreet
 shadow
+sudo
 systemd
 tpm2-tss
 libfido2
@@ -44,8 +48,10 @@ sway
 swaylock
 swayidle
 hyprland
-hyprpaper
+xdg-desktop-portal
 xdg-desktop-portal-hyprland
+xdg-desktop-portal-wlr
+xdg-utils
 waybar
 wofi
 foot
@@ -55,8 +61,11 @@ xorg-xwayland
 polkit
 polkit-gnome
 seatd
-ttf-jetbrains-mono-nerd
+adwaita-icon-theme
 ttf-dejavu
+inter-font
+noto-fonts
+noto-fonts-emoji
 iptables
 pipewire-jack
 pipewire-alsa
@@ -65,20 +74,31 @@ crun
 # CLI daily driver
 yazi
 neovim
+zsh
+zsh-completions
+bash-completion
 git
 curl
-wget
+man-db
+man-pages
+unzip
+p7zip
 htop
 fd
+plocate
 fastfetch
 networkmanager
 iwd
+iw
 wpa_supplicant
 smartmontools
+psmisc
 bubblewrap
 nftables
+wireguard-tools
 chrony
 openssh
+hblock
 librewolf
 pipewire
 pipewire-pulse

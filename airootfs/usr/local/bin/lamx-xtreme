@@ -3,6 +3,7 @@ set -euo pipefail
 # xtreme - run the laptop at its highest limits for heavy tasks
 # AC power required unless --force. reverts cleanly with off.
 # usage: sudo lamx-xtreme on|off|status [--force]
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
 MODE="${1:-status}"
 FORCE="${2:-}"
 discharging() { grep -q Discharging /sys/class/power_supply/BAT*/status 2>/dev/null; }

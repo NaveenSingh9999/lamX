@@ -3,12 +3,17 @@
 cat <<'EOF'
 commands:
   lamx list | disable <c> | enable <c>   hardware disconnect at kernel level
-    components: camera wifi bluetooth mic speakers usb ethernet nvidia
+    components: camera wifi bluetooth mic speakers usb ethernet nvidia internet
+    internet kills all radios plus NIC drivers plus interfaces at once
   lamx-prompt <cmd>                      run restricted command with approval prompt
   lamx-vpn on|off|status                 optional VPN killswitch, off by default
   lamx-backup /mnt/backup                encrypted snapshot backup
   lamx-wipe /dev/disk                    secure erase, asks ERASE
   lamx-help                              this help
+
+look:
+  lamx-wallpaper                             live video loop, still fallback
+  lamx-wallpaper-fetch <url>                 add open loops via yt-dlp
 
 music:
   lamx-music [terms]                     stream YouTube audio, wofi in GUI
@@ -19,6 +24,14 @@ xtreme:
   sudo lamx-xtreme on|off|status         max limits for heavy tasks, AC only
   unleashed boot entry                   no CPU mitigations, picked at boot
 
+idle:
+  sudo lamx-idle on|off|status           phone-style 24/7 sip mode
+  sudo lamx-idle auto [on|off]           auto on AC unplug and replug
+
+privacy:
+  lamx-eye | --watch | --json           mic, camera, casting indicators
+  bar dot turns red while in use, click opens details
+
 vms:
   quickemu --vm ubuntu.conf --display spice   fastest ISO test, QEMU direct
   virt-manager                           full GUI manager with TPM and UEFI
@@ -27,6 +40,8 @@ security:
   lamx-kzc status|suspects|logs|quarantine   inspect KZC
   lamx-kzc allow 'p>child' | restore [file]  tune and recover
   kzc-dashboard                          local GUI in browser
+  head warns, asks via popup, acts on critical, logs all decisions
+  digest every morning at 8, run kzc-digest anytime
 
 phone:
   lamx-phone link user@ip | push|pull|notify|status   SSH only, no cloud
@@ -35,6 +50,10 @@ sync and wake:
   lamx-sync status|ui|pause|resume     syncthing, pair phone app via device ID
   lamx-sync wake <mac>                 Wake-on-LAN, needs wired plus BIOS WoL
   lamx-sync wol-check [iface]          verify NIC supports magic packet
+
+block:
+  sudo lamx-adblock on|off|status|update   system-wide tracker blocking
+  sudo lamx-adblock allow <domain>         allowlist one domain
 
 keys:
   boot: PIN + TPM. lock and sudo: touch phone key, fallback PIN + Aegis code.

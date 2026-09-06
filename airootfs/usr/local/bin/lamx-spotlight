@@ -7,9 +7,18 @@ Q="${1:-}"
 [ -n "$Q" ] || exit 0
 case "$Q" in
   =*) python3 -c "print(eval('${Q#=}'))" 2>/dev/null | wofi --show dmenu -p "=" || true ;;
-  /*) sel=$(fd -t f -t d --hidden --exclude .cache . "$HOME" /opt /usr/share/applications 2>/dev/null | wofi --show dmenu -i -p ">" --filter "${Q#/}") || exit 0
-      [ -n "$sel" ] && (xdg-open "$sel" || swaymsg exec "$sel" || hyprctl dispatch exec "$sel") ;;
-  @*) exec foot -e lamx-music "${Q#@}" ;;
-  \?*) exec librewolf "https://duckduckgo.com/?q=${Q#\?}" ;;
-  *) compgen -c "$Q" | sort -u | wofi --show dmenu -p ">" --filter "$Q" | head -n1 | xargs -r swaymsg exec 2>/dev/null || xargs -r hyprctl dispatch exec 2>/dev/null || true ;;
+  /*) q="${Q#/}"
+      found=$(locate -i -l 30 "$q" 2>/dev/null | grep -vE '^/(proc|sys|dev)/' | head -n 30)
+      [ -z "$found" ] && found=$(fd -i -H -t f -t d "$q" "$HOME" 2>/dev/null | head -n 30)
+      sel=$(printf '%s\n' "$found" | wofi --show dmenu -i -p ">" --filter "$q") || exit 0
+      [ -z "$sel" ] && exit 0
+      if [ -d "$sel" ]; then exec foot yazi "$sel"
+      else xdg-open "$sel" 2>/dev/null || exec "$sel"; fi ;;
+  @*) exec foot lamx-music "${Q#@}" ;;
+  \?*) exec xdg-open "https://duckduckgo.com/?q=${Q#\?}" ;;
+  *) sel=$(compgen -c "$Q" | sort -u | wofi --show dmenu -p ">" --filter "$Q" | head -n1) || exit 0
+      [ -z "$sel" ] && exit 0
+      if pgrep -x sway >/dev/null; then exec swaymsg exec -- "$sel"
+      elif pgrep -x Hyprland >/dev/null; then exec hyprctl dispatch exec -- "$sel"
+      else exec $sel; fi ;;
 esac

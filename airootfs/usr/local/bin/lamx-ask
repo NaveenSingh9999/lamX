@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# ask - blocking user question for security decisions, GUI plus TTY fallback
+# usage: lamx-ask "title" "body" timeout_secs default opt1 opt2 ...
+# prints chosen option, defaults safely on timeout
+TITLE="$1"; BODY="$2"; TIMEOUT="$3"; DEFAULT="$4"; shift 4
+if [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ] && command -v wofi >/dev/null; then
+  (echo "$BODY"; printf '%s\n' "$@") | timeout "$TIMEOUT" wofi --show dmenu -p "$TITLE" -i | tail -n1 || echo "$DEFAULT"
+else
+  echo "[$TITLE] $BODY" | wall || true
+  echo "$DEFAULT"
+fi

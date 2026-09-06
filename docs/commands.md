@@ -48,4 +48,28 @@ Local-only web UI on loopback, opened in the browser with one command. Live serv
 
 ## lamx-glassy / lamx-setup / lamx-help
 
-`lamx-glassy on` enables full SwayFX blur after extras install. `lamx-setup` reruns the first-boot wizard. `lamx-help` prints the condensed version of this page on device.
+`lamx-glassy on` enables full SwayFX blur after extras install. `lamx-setup` reruns the first-boot wizard. `lamx-help` prints the condensed version of this page on device. First graphical login greets once with live protection state.
+
+## kzc-digest — morning summary
+
+Runs daily at 8 through a user timer: suspects, quarantines, decisions, top scorers. Run `kzc-digest` by hand anytime.
+
+## VMs
+
+`quickemu --vm name.conf --display spice` for instant ISO tests. `virt-manager` full GUI with UEFI and TPM passthrough, user already in libvirt and kvm groups.
+
+## lamx-eye — privacy indicators
+
+Mic, camera, and casting state from the PipeWire graph plus device handles, debounced. Plain output, `--watch` live view, `--json` for the Waybar pill that turns red while in use.
+
+## lamx-idle — sip mode
+
+`on` drops to powersave everything, still wallpaper, dimmed screen, services alive. `off` restores. `auto on` arms AC unplug and replug switching.
+
+## lamx-adblock — resolver blocking
+
+`on` pulls blocklists into hosts with weekly refresh. `off` restores. `update` refreshes. `allow` carves one domain back until next update.
+
+## lamx-wallpaper — live engine
+
+`auto`, `day`, or `night` plays mpvpaper video loops from Pictures with swww still fallback. `lamx-wallpaper-fetch day|night <url>` downloads open-licensed loops via yt-dlp.

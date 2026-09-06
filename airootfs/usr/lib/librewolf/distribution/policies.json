@@ -3,9 +3,16 @@
     "DisableTelemetry": true,
     "DisableFirefoxStudies": true,
     "DisablePocket": true,
+    "DisableFirefoxAccounts": true,
+    "DisableFormHistory": true,
+    "PasswordManagerEnabled": false,
+    "AutofillAddressEnabled": false,
+    "AutofillCreditCardEnabled": false,
     "DNSOverHTTPS": { "Enabled": true, "ProviderURL": "https://cloudflare-dns.com/dns-query" },
     "EnableTrackingProtection": { "Value": true, "Cryptomining": true, "Fingerprinting": true },
     "NoDefaultBookmarks": true,
-    "OfferToSaveLogins": false
+    "OfferToSaveLogins": false,
+    "Homepage": { "URL": "about:blank", "Locked": false },
+    "TranslateEnabled": false
   }
 }

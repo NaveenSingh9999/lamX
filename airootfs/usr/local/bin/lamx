@@ -2,7 +2,7 @@
 set -euo pipefail
 # lamx - private hardware disconnect at kernel level
 # usage: lamx list | lamx status | lamx disable <component> | lamx enable <component>
-# components: camera wifi bluetooth mic speakers usb ethernet nvidia
+# components: camera wifi bluetooth mic speakers usb ethernet nvidia internet
 STATE_DIR="/etc/lamx/disabled"
 MOD_DIR="/etc/modprobe.d"
 RFKILL_BIN="$(command -v rfkill || true)"
@@ -16,12 +16,13 @@ declare -A MODS=(
   [usb]="usb_storage uas"
   [ethernet]="r8169 e1000e igc atlantic"
   [nvidia]="nvidia nvidia_modeset nvidia_uvm nouveau"
+  [internet]="iwlwifi iwlmei iwlmvm ath9k ath10k_pci ath11k_pci mt76 mt7921e brcmfmac rtw88_pci r8169 e1000e igc atlantic usbnet cdc_ether cdc_ncm cdc_mbim rndis_host btusb bluetooth"
 )
 
 mkdir -p "$STATE_DIR"
 
 list_components() {
-  for k in camera wifi bluetooth mic speakers usb ethernet nvidia; do echo "$k"; done
+  for k in camera wifi bluetooth mic speakers usb ethernet nvidia internet; do echo "$k"; done
 }
 
 is_disabled() {
@@ -52,6 +53,13 @@ kernel_block() {
   local mods="${MODS[$c]:-}"
   if [ "$c" = "wifi" ] && [ -n "$RFKILL_BIN" ]; then rfkill block wifi || true; fi
   if [ "$c" = "bluetooth" ] && [ -n "$RFKILL_BIN" ]; then rfkill block bluetooth || true; fi
+  if [ "$c" = "internet" ]; then
+    nmcli networking off 2>/dev/null || true
+    [ -n "$RFKILL_BIN" ] && rfkill block all || true
+    for iface in $(ls /sys/class/net/ | grep -v '^lo$'); do
+      ip link set "$iface" down 2>/dev/null || true
+    done
+  fi
   # unbind USB camera / bluetooth / wifi where possible
   if [ "$c" = "camera" ]; then
     for d in /sys/bus/usb/drivers/uvcvideo/*; do
@@ -76,6 +84,11 @@ kernel_unblock() {
   done
   if [ "$c" = "wifi" ] && [ -n "$RFKILL_BIN" ]; then rfkill unblock wifi || true; fi
   if [ "$c" = "bluetooth" ] && [ -n "$RFKILL_BIN" ]; then rfkill unblock bluetooth || true; fi
+  if [ "$c" = "internet" ]; then
+    [ -n "$RFKILL_BIN" ] && rfkill unblock all || true
+    nmcli networking on 2>/dev/null || true
+    systemctl restart NetworkManager 2>/dev/null || true
+  fi
   # rescan USB for camera
   if [ "$c" = "camera" ]; then
     echo 1 > /sys/bus/usb/rescan 2>/dev/null || true
@@ -87,12 +100,14 @@ case "${1:-list}" in
     do_list
     ;;
   disable)
+    [ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
     c="${2:-}"; [ -n "$c" ] || { echo "usage: lamx disable <component>"; exit 1; }
     [[ -v MODS[$c] ]] || { echo "unknown: $c"; echo "valid: ${!MODS[@]}"; exit 1; }
     kernel_block "$c"
     echo "$c disabled at kernel level."
     ;;
   enable)
+    [ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
     c="${2:-}"; [ -n "$c" ] || { echo "usage: lamx enable <component>"; exit 1; }
     [[ -v MODS[$c] ]] || { echo "unknown: $c"; exit 1; }
     kernel_unblock "$c"

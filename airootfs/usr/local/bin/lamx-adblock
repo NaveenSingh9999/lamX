@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# adblock - system-wide tracker and ad blocking at the resolver
+# hblock lists into /etc/hosts, honored under DNS-over-TLS
+# usage: sudo lamx-adblock on|off|status|update|allow <domain>
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
+BAK="/etc/hosts.lamx-bak"
+case "${1:-status}" in
+  on)
+    [ -f "$BAK" ] || cp /etc/hosts "$BAK"
+    hblock
+    systemctl enable --now hblock.timer 2>/dev/null || true
+    echo "adblock on: $(grep -c '^0\.0\.0\.0' /etc/hosts 2>/dev/null || echo 0) entries blocked" ;;
+  off)
+    systemctl disable --now hblock.timer 2>/dev/null || true
+    [ -f "$BAK" ] && cp "$BAK" /etc/hosts
+    echo "adblock off, hosts restored" ;;
+  update) hblock; echo updated ;;
+  allow)
+    [ -n "${2:-}" ] || { echo "usage: sudo lamx-adblock allow <domain>"; exit 1; }
+    sed -i "/[[:space:]]$2\$/d" /etc/hosts
+    echo "allowed $2 until next update" ;;
+  *) n=$(grep -c '^0\.0\.0\.0' /etc/hosts 2>/dev/null || echo 0)
+     [ "$n" -gt 0 ] 2>/dev/null && echo "adblock: on ($n blocked)" || echo "adblock: off" ;;
+esac

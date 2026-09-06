@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# greet - KZC welcomes the user once on first graphical login
+# neutral wording, no system identifiers
+FLAG="$HOME/.config/.kzc-greeted"
+[ -f "$FLAG" ] && exit 0
+mkdir -p "$HOME/.config"
+ST="monitor $(systemctl is-active kzc-monitor 2>/dev/null || echo off)"
+if [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]; then
+  swaynag -t warning \
+    -m "Protection active ($ST). Press Mod+Space to search, Mod+M for music. Run lamx-help for commands." \
+    -b "Show commands" "foot lamx-help" -b "Begin" "dismiss" &
+else
+  echo "Protection active ($ST). Run lamx-help for commands."
+fi
+touch "$FLAG"

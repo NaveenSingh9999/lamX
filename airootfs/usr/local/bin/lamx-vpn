@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # lamx-vpn - optional killswitch, off by default
-# usage: lamx-vpn on|off|status
+# usage: sudo lamx-vpn on|off|status
+[ "$EUID" -eq 0 ] || exec sudo "$0" "$@"
 case "${1:-status}" in
   on)
+    [ -f /etc/wireguard/wg0.conf ] || { echo "missing /etc/wireguard/wg0.conf, copy the example first"; exit 1; }
     wg-quick up wg0
-    nft add table inet lamxkill || true
-    nft 'add chain inet lamxkill out { type filter hook output priority 0; policy drop; }' || true
-    nft add rule inet lamxkill out oifname "wg0" accept || true
-    nft add rule inet lamxkill out oifname "lo" accept || true
-    echo "killswitch on: only wg0 and lo allowed"
+    # handshake must escape via the physical interface or the tunnel dies
+    EP=$(grep -m1 '^Endpoint' /etc/wireguard/wg0.conf | awk '{print $3}')
+    EPHOST="${EP%%:*}"; EPPORT="${EP##*:}"
+    EPIP=$(getent ahosts "$EPHOST" | awk '{print $1; exit}')
+    nft delete table inet lamxkill 2>/dev/null || true
+    nft add table inet lamxkill
+    nft 'add chain inet lamxkill out { type filter hook output priority 0; policy drop; }'
+    nft add rule inet lamxkill out oifname "wg0" accept
+    nft add rule inet lamxkill out oifname "lo" accept
+    [ -n "$EPIP" ] && nft add rule inet lamxkill out ip daddr "$EPIP" udp dport "$EPPORT" accept
+    nft add rule inet lamxkill out udp dport 67 accept
+    echo "killswitch on: wg0, lo, handshake to $EPHOST, DHCP only"
     ;;
   off)
     wg-quick down wg0 || true

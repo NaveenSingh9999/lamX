@@ -4,7 +4,7 @@ border-color=#3b82f640
 border-size=1
 border-radius=12
 default-timeout=5000
-font=JetBrainsMono Nerd Font 10
+font=IosevkaTerm Nerd Font 10
 
 [urgency=critical]
 background-color=#1e1a2acc

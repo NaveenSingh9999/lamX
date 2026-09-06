@@ -14,6 +14,7 @@ RefuseManualStart=no
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes
+ReadWritePaths=/var/lib/kzc /var/log/kzc
 NoNewPrivileges=no
 AmbientCapabilities=CAP_KILL CAP_DAC_OVERRIDE CAP_AUDIT_READ
 MemoryMax=120M

@@ -1,0 +1,17 @@
+[Unit]
+Description=KZC headless decision head
+After=kzc-monitor.service opencode-kzc.service
+BindsTo=kzc-monitor.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/kzc-head
+Restart=always
+RestartSec=3
+RefuseManualStop=yes
+MemoryMax=100M
+CPUQuota=10%
+
+[Install]
+WantedBy=multi-user.target

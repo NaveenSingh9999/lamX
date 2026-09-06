@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# phone link - files, notifications, status over plain SSH, no cloud
+# phone needs Termux with sshd running: pkg install openssh, sshd
+# usage: lamx-phone link user@phone-ip | status | push <file> | pull <file> | notify <text> | unlink
+CONF="$HOME/.config/lamx-phone"
+case "${1:-status}" in
+  link)
+    [ -n "${2:-}" ] || { echo "usage: lamx-phone link user@phone-ip"; exit 1; }
+    ssh-copy-id "$2" && echo -n "$2" > "$CONF" && echo "linked $2" ;;
+  unlink) rm -f "$CONF"; echo unlinked ;;
+  status)
+    [ -f "$CONF" ] || { echo "not linked, run lamx-phone link first"; exit 1; }
+    P=$(cat "$CONF")
+    ssh -o ConnectTimeout=5 "$P" "termux-battery-status 2>/dev/null | head -c 300; echo; uptime" || echo "phone unreachable" ;;
+  push)
+    [ -f "$CONF" ] || { echo "not linked"; exit 1; }
+    scp "$2" "$(cat "$CONF"):~/lamx/" ;;
+  pull)
+    [ -f "$CONF" ] || { echo "not linked"; exit 1; }
+    scp "$(cat "$CONF"):~/lamx/$2" . ;;
+  notify)
+    [ -f "$CONF" ] || { echo "not linked"; exit 1; }
+    shift; ssh "$(cat "$CONF")" "termux-notification --title device --content '$*'" ;;
+  *) echo "usage: lamx-phone link|status|push|pull|notify|unlink"; exit 1 ;;
+esac

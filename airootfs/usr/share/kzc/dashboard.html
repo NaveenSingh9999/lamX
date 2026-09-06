@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta http-equiv="refresh" content="10">
+<title>Security Dashboard</title>
+<style>
+body{background:#0a0e1a;color:#e5e5e5;font-family:monospace;margin:0;padding:16px}
+h1{color:#60a5fa;font-size:18px}h2{color:#60a5fa;font-size:14px;margin-top:20px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(59,130,246,.35);border-radius:12px;padding:12px;margin:8px 0}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;text-align:left;font-size:13px}
+th{color:#94a3b8}tr+tr td{border-top:1px solid rgba(255,255,255,.07)}
+.hot{color:#ef4444}.ok{color:#22c55e}.dim{color:#94a3b8}
+pre{background:#05070d;border-radius:8px;padding:10px;overflow:auto;font-size:12px;max-height:220px}
+button,input{background:rgba(59,130,246,.2);color:#fff;border:1px solid rgba(59,130,246,.5);border-radius:8px;padding:6px 10px;font-family:monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+</style></head><body>
+<h1>Security Dashboard <span class="dim">local only, no network</span></h1>
+<div class="grid">
+<div class="card"><h2>Status</h2><table id="st"></table></div>
+<div class="card"><h2>Quarantine</h2><table id="q"></table></div>
+</div>
+<div class="card"><h2>Suspects</h2><table id="s"><tr><th>score</th><th>count</th><th>last seen</th><th>key</th><th></th></tr></table></div>
+<div class="card"><h2>Recent alerts</h2><pre id="log"></pre></div>
+<div class="card"><h2>Allow an exec pair</h2>
+<form method="post" action="/api/allow"><input name="pair" placeholder="parent>child" size="24"><button>Allow</button></form>
+<h2>Config</h2><pre id="cfg"></pre></div>
+<script>
+async function j(p,o){return (await fetch(p,o)).json()}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+j('/api/summary').then(d=>{
+ st.innerHTML=d.services.map(s=>`<tr><td>${s[0]}</td><td class="${s[1]=='active'?'ok':'hot'}">${s[1]}</td></tr>`).join('')
+  +`<tr><td>samples</td><td>${d.samples}</td></tr>`;
+ s.innerHTML='<tr><th>score</th><th>count</th><th>last seen</th><th>key</th><th></th></tr>'+d.suspects.map(s=>
+  `<tr><td class="${s.score>5?'hot':''}">${s.score}</td><td>${s.count}</td><td class="dim">${s.last}</td><td>${esc(s.key)}</td><td><form method="post" action="/api/allow"><input type="hidden" name="pair" value="${esc(s.key)}"><button>allow</button></form></td></tr>`).join('');
+ q.innerHTML=d.quarantine.map(x=>`<tr><td>${esc(x.dst)}</td><td class="dim">${esc(x.src)}</td><td><form method="post" action="/api/restore"><input type="hidden" name="dst" value="${esc(x.dst)}"><button>restore</button></form></td></tr>`).join('')||'<tr><td class="dim">empty</td></tr>';
+ log.textContent=d.log.join('\n');
+ cfg.textContent=d.config;
+});
+</script></body></html>

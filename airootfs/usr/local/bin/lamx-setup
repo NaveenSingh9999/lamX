@@ -68,6 +68,12 @@ case "$GPU" in
   *) echo "graphics: kept ISO Intel set" ;;
 esac
 
+# 6c speed versus armor - unleashed disables CPU mitigations, weaker security
+if yesno "Boot unleashed by default for max speed? Weakens exploit defenses."; then
+  bootctl set-default lamx-unleashed.conf 2>/dev/null || echo "default lamx-unleashed.conf" > /boot/loader/loader.conf
+  msg "Unleashed set. lamX entry remains in the boot menu."
+fi
+
 # 7 snapshot baseline
 snapper -c root create-config / || true
 snapper -c root create --description "initial" || true

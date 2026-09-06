@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""KZC monitor - on-device statistical AI, no LLM, no network, no API.
-Watches proc, modules, persist paths, USB. Learns baselines, z-score alerts.
-Open source stack: auditd + AppArmor + this daemon. Runs 24/7, self-protecting."""
+"""KZC monitor v2 - on-device statistical AI, no LLM, no network, no API.
+Upgrades: allowlist, suspect scoring with decay, alert rate-limit,
+quarantine manifest with restore, self-integrity check.
+Stack: auditd + AppArmor + this daemon. Runs 24/7, self-protecting."""
 import json
 import os
 import sys
@@ -11,23 +12,39 @@ import collections
 import subprocess
 import math
 
-CONF = "/etc/kzc/config.toml"
 STATE = "/var/lib/kzc/baseline.json"
+SUSPECTS = "/var/lib/kzc/suspects.json"
 LOG = "/var/log/kzc/kzc.log"
 FIFO = "/var/lib/kzc/alerts.fifo"
 QUAR = "/var/lib/kzc/quarantine"
+QMAN = "/var/lib/kzc/quarantine.json"
+ALLOW = "/etc/kzc/allowlist.conf"
+SELF = "/usr/local/bin/kzc-monitor"
 
 PERSIST = ["/etc/systemd/system", "/etc/cron.d", "/etc/modprobe.d", "/boot"]
-WINDOW = 300
+WINDOW = 10
 Z_THRESH = 3.5
+RATE_LIMIT = 300
+DECAY_EVERY = 6
+
+_last_alert = {}
 
 def log(msg):
     os.makedirs(os.path.dirname(LOG), exist_ok=True)
     with open(LOG, "a") as f:
         f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} {msg}\n")
 
-def alert(text):
+def rate_ok(key):
+    now = time.time()
+    if now - _last_alert.get(key, 0) < RATE_LIMIT:
+        return False
+    _last_alert[key] = now
+    return True
+
+def alert(text, key=None):
     log(f"ALERT {text}")
+    if key and not rate_ok(key):
+        return
     try:
         os.makedirs(os.path.dirname(FIFO), exist_ok=True)
         if not os.path.exists(FIFO):
@@ -42,19 +59,26 @@ def alert(text):
     except Exception:
         pass
 
-def load_baseline():
+def load_json(p, default):
     try:
-        with open(STATE) as f:
+        with open(p) as f:
             return json.load(f)
     except Exception:
-        return {"exec_counts": {}, "samples": 0}
+        return default
 
-def save_baseline(b):
-    os.makedirs(os.path.dirname(STATE), exist_ok=True)
-    tmp = STATE + ".tmp"
+def save_json(p, obj):
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + ".tmp"
     with open(tmp, "w") as f:
-        json.dump(b, f)
-    os.rename(tmp, STATE)
+        json.dump(obj, f)
+    os.rename(tmp, p)
+
+def load_allow():
+    try:
+        with open(ALLOW) as f:
+            return {l.strip() for l in f if l.strip() and not l.startswith("#")}
+    except Exception:
+        return set()
 
 def proc_snapshot():
     pairs = collections.Counter()
@@ -78,11 +102,6 @@ def proc_snapshot():
         except Exception:
             continue
     return pairs, pids
-
-def zscore(x, mean, std):
-    if std == 0:
-        return 0 if x == mean else 99
-    return abs(x - mean) / std
 
 def file_hash(p):
     try:
@@ -116,45 +135,65 @@ def scan_persist(known):
 def quarantine(p):
     try:
         os.makedirs(QUAR, exist_ok=True)
+        man = load_json(QMAN, {})
         base = os.path.basename(p)
         dst = os.path.join(QUAR, f"{int(time.time())}-{base}")
         os.chmod(p, 0)
         os.rename(p, dst)
+        man[dst] = p
+        save_json(QMAN, man)
         log(f"quarantined {p} -> {dst}")
     except Exception as e:
         log(f"quarantine fail {p}: {e}")
 
+def bump_suspect(suspects, key, weight=1):
+    s = suspects.get(key, {"score": 0, "count": 0, "first": time.time(), "last": 0})
+    s["score"] += weight
+    s["count"] += 1
+    s["last"] = time.time()
+    suspects[key] = s
+    return s["score"]
+
 def main():
-    baseline = load_baseline()
+    baseline = load_json(STATE, {})
+    suspects = load_json(SUSPECTS, {})
     counts = collections.Counter(baseline.get("exec_counts", {}))
     samples = baseline.get("samples", 0)
     fknown = baseline.get("files", {})
+    allow = load_allow()
+    self_hash = file_hash(SELF)
     mod_known = set()
     try:
         with open("/proc/modules") as f:
             mod_known = set(l.split()[0] for l in f)
     except Exception:
         pass
-    log("KZC start, samples=%d" % samples)
+    log("KZC v2 start, samples=%d suspects=%d" % (samples, len(suspects)))
+    tick = 0
     while True:
         try:
+            tick += 1
+            if tick % DECAY_EVERY == 0:
+                for k in list(suspects):
+                    suspects[k]["score"] = max(0, suspects[k]["score"] - 1)
+                    if suspects[k]["score"] == 0 and time.time() - suspects[k]["last"] > 86400:
+                        del suspects[k]
+            if file_hash(SELF) != self_hash:
+                alert("KZC binary modified, possible tampering", key="self")
             pairs, pids = proc_snapshot()
             samples += 1
-            # learn + detect: compare current pair rate vs running mean
             for pair, c in pairs.items():
                 key = f"{pair[0]}>{pair[1]}"
+                if key in allow:
+                    continue
                 prev = counts.get(key, 0)
                 mean = prev / max(samples, 1)
-                # simple running std approx via sqrt(mean) for counts
                 std = math.sqrt(mean + 1)
-                z = zscore(c, mean, std)
+                z = 0 if std == 0 else abs(c - mean) / std
                 counts[key] = prev + c
                 if samples > 50 and z > Z_THRESH and c >= 2:
-                    # allowlist: expected sway children
-                    if pair in {("sway", "foot"), ("sway", "wofi"), ("sway", "waybar")}:
-                        continue
-                    alert(f"anomaly exec {key} x{c} z={z:.1f}")
-                    # kill shell escapes from GUI apps
+                    score = bump_suspect(suspects, key)
+                    alert(f"anomaly exec {key} x{c} z={z:.1f} score={score}", key=f"exec:{key}")
                     if pair[0] in ("librewolf", "wofi", "waybar") and pair[1] in ("bash", "sh", "zsh"):
                         for pid, (pn, n) in pids.items():
                             if pn == pair[0] and n == pair[1]:
@@ -163,41 +202,39 @@ def main():
                                     log(f"killed {pid} {key}")
                                 except Exception:
                                     pass
-            # module loads
             try:
                 with open("/proc/modules") as f:
                     cur = set(l.split()[0] for l in f)
-                newmod = cur - mod_known
-                for m in newmod:
+                for m in cur - mod_known:
                     if m not in ("uvcvideo", "btusb", "iwlwifi", "nvidia"):
-                        alert(f"new kernel module: {m}")
+                        bump_suspect(suspects, f"module:{m}", 2)
+                        alert(f"new kernel module: {m}", key=f"mod:{m}")
                 mod_known = cur
             except Exception:
                 pass
-            # persist integrity
             for ch in scan_persist(fknown):
-                alert(f"persist change {ch}")
+                bump_suspect(suspects, ch, 2)
+                alert(f"persist change {ch}", key=f"persist:{ch}")
                 if ch.startswith("new:") and ch.endswith((".sh", ".service", ".timer")):
                     quarantine(ch[4:])
-            # USB storage watch
             try:
                 for dev in os.listdir("/sys/block"):
                     if dev.startswith(("sd", "nvme")):
-                        ue = f"/sys/block/{dev}/device/uevent"
                         try:
-                            with open(ue) as f:
+                            with open(f"/sys/block/{dev}/device/uevent") as f:
                                 if "USB" in f.read():
-                                    alert(f"usb block device: {dev}")
+                                    alert(f"usb block device: {dev}", key=f"usb:{dev}")
                         except Exception:
                             pass
             except Exception:
                 pass
             if samples % 12 == 0:
-                save_baseline({"exec_counts": dict(counts), "samples": samples, "files": fknown})
-            time.sleep(10)
+                save_json(STATE, {"exec_counts": dict(counts), "samples": samples, "files": fknown})
+                save_json(SUSPECTS, suspects)
+            time.sleep(WINDOW)
         except Exception as e:
             log(f"loop err: {e}")
-            time.sleep(10)
+            time.sleep(WINDOW)
 
 if __name__ == "__main__":
     sys.exit(main())

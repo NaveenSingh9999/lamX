@@ -48,10 +48,10 @@ chown -R "$USERN:$USERN" "/home/$USERN/.config" 2>/dev/null || true
 grep -q "config.d/fx" /etc/sway/config.d/lamx 2>/dev/null || echo "include /etc/sway/config.d/fx" >> /etc/sway/config.d/lamx || true
 
 echo "[6/7] enable services (console only, SSH unaffected)"
-systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved auditd kzc-monitor kzc-notify opencode-kzc thermald tlp libvirtd 2>/dev/null || true
+systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-notify opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true
 systemctl enable snapper-timeline.timer snapper-cleanup.timer 2>/dev/null || true
 snapper -c root create-config / 2>/dev/null || echo "snapper skipped, not btrfs"
-systemctl mask bluetooth 2>/dev/null || true
+systemctl mask bluetooth NetworkManager-wait-online.service 2>/dev/null || true
 
 echo "[7/7] passwordless templates staged, NOT activated"
 echo "To avoid locking sudo on a rented VM, PAM wiring is manual:"

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# sync - syncthing control plus Wake-on-LAN
+# usage: lamx-sync status|ui|pause|resume|wake <mac> [broadcast]
+# pair phone via Syncthing app or web UI device IDs. WoL needs wired NIC plus BIOS enabled.
+case "${1:-status}" in
+  status)
+    systemctl --user is-active syncthing 2>/dev/null || systemctl is-active "syncthing@$USER" 2>/dev/null || echo inactive
+    curl -s -m 3 http://127.0.0.1:8384/rest/system/status -H "X-API-Key: $(grep -oPm1 '(?<=<apikey>)[^<]+' ~/.local/state/syncthing/config.xml 2>/dev/null || grep -oPm1 '(?<=<apikey>)[^<]+' ~/.config/syncthing/config.xml 2>/dev/null)" 2>/dev/null | head -c 400
+    echo ;;
+  ui) exec librewolf --new-window http://127.0.0.1:8384 ;;
+  pause) systemctl --user stop syncthing 2>/dev/null || sudo systemctl stop "syncthing@$USER"; echo paused ;;
+  resume) systemctl --user start syncthing 2>/dev/null || sudo systemctl start "syncthing@$USER"; echo resumed ;;
+  wake)
+    [ -n "${2:-}" ] || { echo "usage: lamx-sync wake <mac> [broadcast]"; exit 1; }
+    wakeonlan -i "${3:-255.255.255.255}" "$2" ;;
+  wol-check) sudo ethtool "${2:-$(ip -o link | awk -F': ' '/en|eth/{print $2; exit}')}" | grep -i wake ;;
+  *) echo "usage: lamx-sync status|ui|pause|resume|wake|wol-check"; exit 1 ;;
+esac

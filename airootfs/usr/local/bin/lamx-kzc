@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# kzc control - status, suspects, allowlist, restore, logs
+# usage: lamx-kzc status|suspects|allow <p>c <c>child>|restore [file]|logs|quarantine
+SUS="/var/lib/kzc/suspects.json"
+BASE="/var/lib/kzc/baseline.json"
+QMAN="/var/lib/kzc/quarantine.json"
+LOG="/var/log/kzc/kzc.log"
+case "${1:-status}" in
+  status)
+    echo "services:"; systemctl is-active kzc-monitor kzc-notify auditd 2>/dev/null || true
+    echo "samples: $(python3 -c "import json;print(json.load(open('$BASE')).get('samples',0))" 2>/dev/null || echo ?)"
+    echo "suspects: $(python3 -c "import json;print(len(json.load(open('$SUS'))))" 2>/dev/null || echo ?)"
+    echo "quarantined: $(python3 -c "import json;print(len(json.load(open('$QMAN'))))" 2>/dev/null || echo ?)" ;;
+  suspects)
+    python3 -c "
+import json
+s=json.load(open('$SUS'))
+for k,v in sorted(s.items(),key=lambda i:-i[1]['score'])[:20]:
+    print(f\"{v['score']:>3}  x{v['count']:<3}  {k}\")" 2>/dev/null || echo "no suspects" ;;
+  allow)
+    [ -n "${2:-}" ] || { echo "usage: lamx-kzc allow 'parent>child'"; exit 1; }
+    echo "$2" >> /etc/kzc/allowlist.conf
+    echo "allowed $2, takes effect within 10 seconds" ;;
+  restore)
+    python3 - "$2" <<'EOF'
+import json,os,sys,shutil
+man=json.load(open('/var/lib/kzc/quarantine.json'))
+t=sys.argv[1] if len(sys.argv)>1 else ''
+cands=[d for d,s in man.items() if t in d or t in s] if t else list(man)
+if not cands: print('nothing matches'); sys.exit(1)
+for d in cands:
+    s=man[d]; os.makedirs(os.path.dirname(s),exist_ok=True)
+    shutil.move(d,s); os.chmod(s,0o644); del man[d]; print(f'restored {s}')
+json.dump(man,open('/var/lib/kzc/quarantine.json','w'))
+EOF
+    ;;
+  quarantine)
+    python3 -c "
+import json
+for d,s in json.load(open('$QMAN')).items(): print(f'{d}  <-  {s}')" 2>/dev/null || echo "empty" ;;
+  logs) tail -n "${2:-30}" "$LOG" 2>/dev/null || echo "no log yet" ;;
+  *) echo "usage: lamx-kzc status|suspects|allow|restore|logs|quarantine"; exit 1 ;;
+esac

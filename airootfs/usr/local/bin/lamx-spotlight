@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# spotlight - single-key search matching the glassy theme
+# prefixes: =expr calc, / files, @ music, ? web, else apps and commands
+Q="${1:-}"
+[ -n "$Q" ] || Q=$(echo "" | wofi --show dmenu -p ">" -i --cache-file /dev/null) || exit 0
+[ -n "$Q" ] || exit 0
+case "$Q" in
+  =*) python3 -c "print(eval('${Q#=}'))" 2>/dev/null | wofi --show dmenu -p "=" || true ;;
+  /*) sel=$(fd -t f -t d --hidden --exclude .cache . "$HOME" /opt /usr/share/applications 2>/dev/null | wofi --show dmenu -i -p ">" --filter "${Q#/}") || exit 0
+      [ -n "$sel" ] && (xdg-open "$sel" || swaymsg exec "$sel" || hyprctl dispatch exec "$sel") ;;
+  @*) exec foot -e lamx-music "${Q#@}" ;;
+  \?*) exec librewolf "https://duckduckgo.com/?q=${Q#\?}" ;;
+  *) compgen -c "$Q" | sort -u | wofi --show dmenu -p ">" --filter "$Q" | head -n1 | xargs -r swaymsg exec 2>/dev/null || xargs -r hyprctl dispatch exec 2>/dev/null || true ;;
+esac

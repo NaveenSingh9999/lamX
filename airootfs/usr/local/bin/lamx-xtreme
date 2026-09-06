@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# xtreme - run the laptop at its highest limits for heavy tasks
+# AC power required unless --force. reverts cleanly with off.
+# usage: sudo lamx-xtreme on|off|status [--force]
+MODE="${1:-status}"
+FORCE="${2:-}"
+discharging() { grep -q Discharging /sys/class/power_supply/BAT*/status 2>/dev/null; }
+
+gov() { # $1 governor
+  for f in /sys/devices/system/cpu/cpufreq/policy*/scaling_governor; do
+    echo "$1" > "$f" 2>/dev/null || true
+  done
+}
+epp() { # $1 preference
+  for f in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do
+    echo "$1" > "$f" 2>/dev/null || true
+  done
+}
+case "$MODE" in
+  on)
+    if discharging && [ "$FORCE" != "--force" ]; then
+      echo "on battery, xtreme needs AC. rerun with --force to override."; exit 1
+    fi
+    powerprofilesctl set performance 2>/dev/null || true
+    gov performance; epp performance
+    systemctl stop thermald 2>/dev/null || true
+    nvidia-settings -a '[gpu:0]/GpuPowerMizerMode=1' >/dev/null 2>&1 || true
+    echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+    mkdir -p /etc/lamx; echo on > /etc/lamx/xtreme
+    echo "xtreme on: performance governor, max EPP, thermald paused, caches dropped" ;;
+  off)
+    powerprofilesctl set balanced 2>/dev/null || true
+    gov powersave 2>/dev/null || gov schedutil || true
+    epp balance_performance
+    systemctl start thermald 2>/dev/null || true
+    echo off > /etc/lamx/xtreme 2>/dev/null || true
+    echo "xtreme off: balanced profile, thermald resumed" ;;
+  *) state=$(cat /etc/lamx/xtreme 2>/dev/null || echo off)
+     echo "xtreme: $state | gov: $(cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor 2>/dev/null || echo ?)";;
+esac

@@ -15,9 +15,26 @@ music:
   lamx-music -q [terms]                  queue mode, -s subscriptions
   media keys play, next, prev work in both sessions. Mod+M opens music.
 
+xtreme:
+  sudo lamx-xtreme on|off|status         max limits for heavy tasks, AC only
+  unleashed boot entry                   no CPU mitigations, picked at boot
+
 vms:
   quickemu --vm ubuntu.conf --display spice   fastest ISO test, QEMU direct
   virt-manager                           full GUI manager with TPM and UEFI
+
+security:
+  lamx-kzc status|suspects|logs|quarantine   inspect KZC
+  lamx-kzc allow 'p>child' | restore [file]  tune and recover
+  kzc-dashboard                          local GUI in browser
+
+phone:
+  lamx-phone link user@ip | push|pull|notify|status   SSH only, no cloud
+
+sync and wake:
+  lamx-sync status|ui|pause|resume     syncthing, pair phone app via device ID
+  lamx-sync wake <mac>                 Wake-on-LAN, needs wired plus BIOS WoL
+  lamx-sync wol-check [iface]          verify NIC supports magic packet
 
 keys:
   boot: PIN + TPM. lock and sudo: touch phone key, fallback PIN + Aegis code.

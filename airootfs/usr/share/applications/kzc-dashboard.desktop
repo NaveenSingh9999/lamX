@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Security Dashboard
+Comment=Local KZC monitoring, suspects, quarantine, config
+Exec=sh -c 'kzc-dashboard'
+Terminal=false
+Categories=System;Monitor;

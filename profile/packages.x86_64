@@ -69,6 +69,7 @@ git
 curl
 wget
 htop
+fd
 fastfetch
 networkmanager
 iwd
@@ -93,6 +94,7 @@ btrfs-progs
 snapper
 zram-generator
 thermald
+ananicy-cpp
 
 # 4 - dev isolation
 distrobox
@@ -112,6 +114,11 @@ dnsmasq
 gnupg
 rsync
 cryptsetup
+
+# sync and remote wake
+syncthing
+ethtool
+wakeonlan
 
 # drivers - generic Intel iGPU in ISO for boot everywhere
 # AMD and Nvidia install on demand via setup GPU chooser

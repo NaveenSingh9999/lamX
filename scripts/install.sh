@@ -38,19 +38,39 @@ pacstrap -K /mnt base linux-cachyos-hardened linux-firmware intel-ucode amd-ucod
   tpm2-tss libfido2 pam-u2f oath-toolkit \
   audit bpftrace python libnotify polkit polkit-gnome \
   qemu-desktop quickemu virt-manager libvirt edk2-ovmf swtpm dnsmasq \
-  mpv yt-dlp ytfzf fzf ffmpeg playerctl
+  mpv yt-dlp ytfzf fzf ffmpeg playerctl ananicy-cpp \
+  syncthing ethtool wakeonlan
 # extras post-install via chaotic-aur: swayfx glassy, blur lock, opencode head
 arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swayfx swaylock-effects opencode-bin && /usr/local/bin/lamx-glassy on" || echo "extras skipped, install manually later"
 
 genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")
-echo "lamxroot UUID=$UUID none tpm2-device=auto" > /mnt/etc/crypttab.initramfs
+cp -r airootfs/* /mnt/ || true
 arch-chroot /mnt useradd -m -G wheel,video,audio,seat,libvirt,kvm -s /bin/bash "$USERN"
 echo "$HOSTN" > /mnt/etc/hostname
 ln -sf /usr/share/zoneinfo/UTC /mnt/etc/localtime
-arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved auditd kzc-monitor kzc-notify opencode-kzc lamx-firstboot thermald tlp snapper-timeline.timer snapper-cleanup.timer libvirtd
-arch-chroot /mnt systemctl mask bluetooth
+arch-chroot /mnt mkinitcpio -P
+arch-chroot /mnt bootctl install --esp-path=/boot
+CMDLINE="root=/dev/mapper/lamxroot rw rootflags=subvol=@ rd.luks.name=$UUID=lamxroot quiet loglevel=3 systemd.show_status=auto preempt=full lockdown=confidentiality slab_nomerge init_on_alloc=1 init_on_free=1 page_alloc.shuffle=1 vsyscall=none debugfs=off"
+cat > /mnt/boot/loader/entries/lamx.conf <<EOF
+title lamX
+linux /vmlinuz-linux-cachyos-hardened
+initrd /intel-ucode.img
+initrd /amd-ucode.img
+initrd /initramfs-linux-cachyos-hardened.img
+options $CMDLINE mitigations=auto
+EOF
+cat > /mnt/boot/loader/entries/lamx-unleashed.conf <<EOF
+title lamX unleashed (no CPU mitigations, less secure)
+linux /vmlinuz-linux-cachyos-hardened
+initrd /intel-ucode.img
+initrd /amd-ucode.img
+initrd /initramfs-linux-cachyos-hardened.img
+options $CMDLINE mitigations=off
+EOF
+echo "default lamx.conf" > /mnt/boot/loader/loader.conf
+arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-notify opencode-kzc lamx-firstboot thermald ananicy-cpp snapper-timeline.timer snapper-cleanup.timer libvirtd "syncthing@$USERN"
+arch-chroot /mnt systemctl mask bluetooth NetworkManager-wait-online.service
 echo "Enroll TPM2+PIN now:"
 systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=yes --tpm2-pcrs=0+7 "$ROOT" || true
-cp -r airootfs/* /mnt/ || true
-echo "lamX installed. Reboot, then run lamx-firstboot as $USERN."
+echo "lamX installed. Boot menu holds lamX and lamX unleashed. Then run lamx-firstboot as $USERN."

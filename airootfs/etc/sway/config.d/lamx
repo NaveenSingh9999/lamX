@@ -18,6 +18,7 @@ smart_gaps on
 
 bindsym $mod+Return exec $term
 bindsym $mod+d exec $menu
+bindsym $mod+space exec lamx-spotlight
 bindsym $mod+Shift+q kill
 bindsym $mod+Shift+e exec swaynag -t warning -m 'Exit?' -b 'Yes' 'swaymsg exit'
 bindsym $mod+h focus left

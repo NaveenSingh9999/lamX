@@ -29,9 +29,10 @@ jobs:
 
       - name: Boot ISO in QEMU
         run: |
-          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then ACCEL="accel=kvm"; else ACCEL="accel=tcg,thread=multi"; fi
-          echo "using $ACCEL"
-          timeout 280 qemu-system-x86_64 -machine "$ACCEL" -m 3072 -smp 2 \
+          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then QEMU_ACCEL="-machine accel=kvm"; else QEMU_ACCEL="-machine accel=tcg -accel tcg,thread=multi"; fi
+          echo "using $QEMU_ACCEL"
+          # shellcheck disable=SC2086
+          timeout 280 qemu-system-x86_64 $QEMU_ACCEL -m 3072 -smp 2 \
             -cdrom iso/*.iso -boot order=d -display none \
             -serial file:serial.log -vnc :0 || true
           [ -f serial.log ] || { echo "QEMU-NEVER-STARTED"; exit 1; }

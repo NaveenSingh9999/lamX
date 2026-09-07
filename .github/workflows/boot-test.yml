@@ -1,0 +1,51 @@
+name: boot-test
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build run ID holding the lamX-iso artifact"
+        required: true
+        default: "34145025382"
+
+jobs:
+  qemu-boot:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Download ISO artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lamX-iso
+          path: ./iso
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86
+          ls -lh iso/
+
+      - name: Boot ISO in QEMU
+        run: |
+          if [ -e /dev/kvm ]; then ACCEL="accel=kvm"; else ACCEL="accel=tcg,thread=multi"; fi
+          echo "using $ACCEL"
+          timeout 280 qemu-system-x86_64 -machine "$ACCEL" -m 3072 -smp 2 \
+            -cdrom iso/*.iso -boot order=d -display none \
+            -serial file:serial.log -vnc :0 || true
+          echo "--- serial tail ---"
+          tail -n 40 serial.log || true
+
+      - name: Verify login reached
+        run: |
+          grep -E "lamX" serial.log && echo "ISSUE-PRINTED"
+          grep -E "login:" serial.log && echo "LOGIN-REACHED"
+          grep -qE "login:" serial.log
+
+      - name: Upload boot log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lamX-boot-log
+          path: serial.log

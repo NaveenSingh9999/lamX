@@ -29,11 +29,12 @@ jobs:
 
       - name: Boot ISO in QEMU
         run: |
-          if [ -e /dev/kvm ]; then ACCEL="accel=kvm"; else ACCEL="accel=tcg,thread=multi"; fi
+          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then ACCEL="accel=kvm"; else ACCEL="accel=tcg,thread=multi"; fi
           echo "using $ACCEL"
           timeout 280 qemu-system-x86_64 -machine "$ACCEL" -m 3072 -smp 2 \
             -cdrom iso/*.iso -boot order=d -display none \
             -serial file:serial.log -vnc :0 || true
+          [ -f serial.log ] || { echo "QEMU-NEVER-STARTED"; exit 1; }
           echo "--- serial tail ---"
           tail -n 40 serial.log || true
 

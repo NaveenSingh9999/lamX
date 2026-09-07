@@ -52,7 +52,12 @@ grep -q "^\[cachyos\]" /mnt/etc/pacman.conf || printf '\n[cachyos]\nInclude = /e
 cp /etc/pacman.d/cachyos-mirrorlist /mnt/etc/pacman.d/ 2>/dev/null || true
 genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")
+# keep the target's own account files, overlay carries live-media unlocks
+cp /mnt/etc/shadow /tmp/lamx-shadow.target
+cp /mnt/etc/gshadow /tmp/lamx-gshadow.target
 cp -r airootfs/* /mnt/ || true
+cp /tmp/lamx-shadow.target /mnt/etc/shadow
+cp /tmp/lamx-gshadow.target /mnt/etc/gshadow
 cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf
 rm -f /mnt/etc/mkinitcpio.conf.d/archiso.conf
 for g in wheel video audio seat libvirt kvm; do

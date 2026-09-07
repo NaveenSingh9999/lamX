@@ -29,7 +29,7 @@ jobs:
 
       - name: Boot ISO in QEMU
         run: |
-          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then QEMU_ACCEL="-machine accel=kvm"; else QEMU_ACCEL="-machine accel=tcg -accel tcg,thread=multi"; fi
+          if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then QEMU_ACCEL="-machine accel=kvm"; else QEMU_ACCEL="-accel tcg,thread=multi"; fi
           echo "using $QEMU_ACCEL"
           # shellcheck disable=SC2086
           timeout 280 qemu-system-x86_64 $QEMU_ACCEL -m 3072 -smp 2 \

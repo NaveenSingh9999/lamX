@@ -20,6 +20,8 @@ jobs:
           pacman -Syu --noconfirm archiso git base-devel sudo reflector
           mkdir -p /etc/mkinitcpio.conf.d
           cp airootfs/etc/mkinitcpio.conf.d/archiso.conf /etc/mkinitcpio.conf.d/
+          sed -i 's/ kms keyboard / kms memdisk archiso archiso_loop_mnt keyboard /' /etc/mkinitcpio.conf
+          grep -q 'archiso' /etc/mkinitcpio.conf
 
       - name: Add CachyOS repos
         run: |

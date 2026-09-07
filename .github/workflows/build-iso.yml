@@ -18,10 +18,6 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm archiso git base-devel sudo reflector
-          mkdir -p /etc/mkinitcpio.conf.d
-          cp airootfs/etc/mkinitcpio.conf.d/archiso.conf /etc/mkinitcpio.conf.d/
-          printf '%s\n' 'MODULES=()' 'BINARIES=()' 'FILES=()' 'HOOKS=(base systemd autodetect microcode modconf kms memdisk archiso archiso_loop_mnt keyboard sd-vconsole block filesystems fsck)' > /etc/mkinitcpio.conf
-          grep -q 'archiso' /etc/mkinitcpio.conf
 
       - name: Add CachyOS repos
         run: |

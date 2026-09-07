@@ -5,7 +5,7 @@ on:
       run_id:
         description: "Build run ID holding the lamX-iso artifact"
         required: true
-        default: "34145025382"
+        default: "34146835424"
 
 jobs:
   qemu-boot:
@@ -27,17 +27,33 @@ jobs:
           sudo apt-get install -y -qq qemu-system-x86
           ls -lh iso/
 
+      - name: Extract kernel and initramfs
+        run: |
+          mkdir -p mnt
+          sudo mount -o loop,ro iso/*.iso mnt
+          KDIR=$(echo mnt/*/boot/x86_64)
+          ls "$KDIR"
+          cp "$KDIR"/vmlinuz-* vmlinuz
+          cp "$KDIR"/initramfs-*.img initramfs.img
+          sudo umount mnt
+          ls -lh vmlinuz initramfs.img
+          ISO=$(basename iso/*.iso)
+          LABEL=$(echo "$ISO" | sed -E 's/.*-([0-9]{4})\.([0-9]{2})\.[0-9]{2}-.*/LAMX_\1\2/')
+          echo "LABEL=$LABEL" >> "$GITHUB_ENV"
+
       - name: Boot ISO in QEMU
         run: |
           if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then QEMU_ACCEL="-machine accel=kvm"; else QEMU_ACCEL="-accel tcg,thread=multi"; fi
           echo "using $QEMU_ACCEL"
           # shellcheck disable=SC2086
-          timeout 280 qemu-system-x86_64 $QEMU_ACCEL -m 3072 -smp 2 \
+          timeout 560 qemu-system-x86_64 $QEMU_ACCEL -m 3072 -smp 2 \
+            -kernel vmlinuz -initrd initramfs.img \
+            -append "archisobasedir=lamx archisolabel=${{ env.LABEL }} console=ttyS0,115200" \
             -cdrom iso/*.iso -boot order=d -display none \
             -serial file:serial.log -vnc :0 || true
           [ -f serial.log ] || { echo "QEMU-NEVER-STARTED"; exit 1; }
           echo "--- serial tail ---"
-          tail -n 40 serial.log || true
+          tail -n 60 serial.log || true
 
       - name: Verify login reached
         run: |

@@ -18,6 +18,8 @@ jobs:
           pacman-key --init
           pacman-key --populate archlinux
           pacman -Syu --noconfirm archiso git base-devel sudo reflector
+          mkdir -p /etc/mkinitcpio.conf.d
+          cp airootfs/etc/mkinitcpio.conf.d/archiso.conf /etc/mkinitcpio.conf.d/
 
       - name: Add CachyOS repos
         run: |

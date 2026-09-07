@@ -38,6 +38,7 @@ TAR_EXCL=()
 for e in "${EXCL[@]}"; do TAR_EXCL+=(--exclude="$e"); done
 tar -C "$REPO_DIR/airootfs" -cf - "${TAR_EXCL[@]}" . | tar -C / -xf -
 cp "$REPO_DIR/profile/mkinitcpio.conf.lamx" /etc/mkinitcpio.conf
+rm -f /etc/mkinitcpio.conf.d/archiso.conf
 mkinitcpio -P 2>/dev/null || echo "initramfs regen skipped"
 echo "overlay copied, excluded: ${EXCL[*]}"
 

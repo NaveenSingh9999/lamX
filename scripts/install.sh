@@ -54,6 +54,7 @@ genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")
 cp -r airootfs/* /mnt/ || true
 cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf
+rm -f /mnt/etc/mkinitcpio.conf.d/archiso.conf
 for g in wheel video audio seat libvirt kvm; do
   arch-chroot /mnt groupadd -f "$g"
 done

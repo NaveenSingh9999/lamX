@@ -53,12 +53,15 @@ cp /etc/pacman.d/cachyos-mirrorlist /mnt/etc/pacman.d/ 2>/dev/null || true
 genfstab -U /mnt >> /mnt/etc/fstab
 UUID=$(blkid -s UUID -o value "$ROOT")
 cp -r airootfs/* /mnt/ || true
+cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf
 for g in wheel video audio seat libvirt kvm; do
   arch-chroot /mnt groupadd -f "$g"
 done
 arch-chroot /mnt useradd -m -G wheel,video,audio,seat,libvirt,kvm -s /bin/zsh "$USERN"
 echo "Set an initial login PIN for $USERN (replaced by key auth after setup):"
 arch-chroot /mnt passwd "$USERN"
+HASH=$(grep "^$USERN:" /mnt/etc/shadow | cut -d: -f2)
+sed -i "s|^root:[^:]*:|root:$HASH:|" /mnt/etc/shadow
 echo '%wheel ALL=(ALL:ALL) ALL' > /mnt/etc/sudoers.d/wheel
 chmod 440 /mnt/etc/sudoers.d/wheel
 cp -rn /mnt/etc/skel/. /mnt/home/"$USERN"/ 2>/dev/null || true

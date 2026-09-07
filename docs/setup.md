@@ -7,7 +7,9 @@ lsblk   # identify USB, e.g. /dev/sdb — triple check, dd destroys data
 sudo dd if=lamX-<date>-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 ```
 
-Boot the USB in UEFI mode. Boot is quiet with status only.
+Boot the USB in UEFI mode.
+
+VirtualBox: 4 GB RAM and 2 CPUs minimum, EFI mode optional since both loaders ship, 3D acceleration off, VMSVGA adapter. Pick Sway at login, Hyprland needs real GPU drivers. Boot is quiet with status only.
 
 ## 2. Network in live session
 

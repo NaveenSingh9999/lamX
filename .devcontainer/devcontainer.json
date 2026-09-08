@@ -1,13 +1,13 @@
 {
-  "name": "lamX build",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
-  "hostRequirements": {
-    "cpus": 4,
-    "memory": "8gb",
-    "storage": "32gb"
+  "name": "lamX codespaces",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 novnc websockify",
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "lamX noVNC",
+      "onAutoForward": "notify"
+    }
   },
   "customizations": {
     "vscode": {

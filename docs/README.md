@@ -1,6 +1,6 @@
 # lamX docs
 
-<img src="../airootfs/usr/share/icons/lamX.png" width="96" alt="lamX mark">
+<img src="../profile/airootfs/usr/share/icons/lamX.png" width="96" alt="lamX mark">
 
 Private, ultra-light, Arch-based daily driver. Start here.
 

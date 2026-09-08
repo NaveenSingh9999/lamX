@@ -1,6 +1,6 @@
 # lamX
 
-<img src="airootfs/usr/share/icons/lamX.png" width="128" alt="lamX mark">
+<img src="profile/airootfs/usr/share/icons/lamX.png" width="128" alt="lamX mark">
 
 **Ultra-light, Arch-based daily driver for people who live in the terminal but want a beautiful desktop on demand.**
 

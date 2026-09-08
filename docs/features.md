@@ -1,6 +1,6 @@
 # Features
 
-<img src="../airootfs/usr/share/icons/lamX.png" width="128" alt="lamX mark">
+<img src="../profile/airootfs/usr/share/icons/lamX.png" width="128" alt="lamX mark">
 
 ## Base
 

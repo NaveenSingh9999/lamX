@@ -56,11 +56,11 @@ jobs:
           echo "--- serial tail ---"
           tail -n 60 serial.log || true
 
-      - name: Verify login reached
+      - name: Verify boot reached userspace
         run: |
-          grep -E "lamX" serial.log && echo "ISSUE-PRINTED"
-          grep -E "login:" serial.log && echo "LOGIN-REACHED"
-          grep -qE "login:" serial.log
+          grep -E "Welcome to lamX!" serial.log && echo "BANNER-PRINTED"
+          grep -E "Initial Setup|login:" serial.log && echo "USERSPACE-REACHED"
+          grep -qE "Welcome to lamX!" serial.log
 
       - name: Upload boot log
         if: always()

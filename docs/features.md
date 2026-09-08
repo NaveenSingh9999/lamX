@@ -24,7 +24,7 @@ LUKS2 plus TPM2 plus PIN, phone as FIDO2 key with TOTP fallback, hardware key la
 
 ## Data and devices
 
-Encrypted snapshot backups, secure wipe, paper recovery keys, SSH phone link, Syncthing pairing, Wake-on-LAN, QEMU stack with UEFI and TPM for testing, Distrobox dev isolation.
+Encrypted snapshot backups, secure wipe, paper recovery keys, SSH phone link, Syncthing pairing, Wake-on-LAN, QEMU stack with UEFI and TPM one command away, Distrobox dev isolation post-install.
 
 ## Operations
 

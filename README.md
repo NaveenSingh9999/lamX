@@ -32,8 +32,8 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 | **Privacy** | Mic, camera, and casting indicators in bar and terminal, DNS adblock toggle, Tor-style VPN option |
 | **Power** | Xtreme max-limits mode, phone-style idle sip mode with auto switching, oomd plus auto priorities |
 | **Data** | Encrypted snapshot backups, secure wipe, paper recovery keys, SSH phone link, Syncthing pairing, Wake-on-LAN |
-| **Dev** | Distrobox isolation, Podman, QEMU stack with UEFI and TPM, man pages, completions |
-| **VMs** | Quickemu for instant ISO tests, virt-manager full GUI |
+| **Dev** | Distrobox isolation, Podman, man pages, completions, QEMU stack one command away |
+| **VMs** | Quickemu for instant ISO tests, virt-manager full GUI, both one command away post-install |
 
 ---
 

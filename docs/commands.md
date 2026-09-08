@@ -56,7 +56,7 @@ Runs daily at 8 through a user timer: suspects, quarantines, decisions, top scor
 
 ## VMs
 
-`quickemu --vm name.conf --display spice` for instant ISO tests. `virt-manager` full GUI with UEFI and TPM passthrough, user already in libvirt and kvm groups.
+`quickemu --vm name.conf --display spice` for instant ISO tests. `virt-manager` full GUI with UEFI and TPM passthrough, user already in libvirt and kvm groups. Both arrive with the installer extras step, rerun online if skipped.
 
 ## lamx-eye — privacy indicators
 

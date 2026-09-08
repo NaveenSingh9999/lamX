@@ -68,7 +68,6 @@ noto-fonts-emoji
 iptables
 pipewire-jack
 pipewire-alsa
-crun
 
 # CLI daily driver
 yazi
@@ -115,18 +114,9 @@ zram-generator
 thermald
 ananicy-cpp
 
-# 4 - dev isolation
-distrobox
-podman
-fuse-overlayfs
-
-# VMs - QEMU best stack, quickemu lands post-install via chaotic-aur
-qemu-desktop
-virt-manager
-libvirt
-edk2-ovmf
-swtpm
-dnsmasq
+# dev isolation and VMs install post-setup on demand, keeps ISO under limits
+# see installer extras: distrobox podman fuse-overlayfs crun qemu-desktop
+# quickemu virt-manager libvirt edk2-ovmf swtpm dnsmasq
 
 # 5 - recovery
 gnupg

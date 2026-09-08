@@ -39,10 +39,10 @@ jobs:
 
       - name: Validate profile
         run: |
-          ls -R profile airootfs scripts
+          ls -R profile scripts
           bash -n scripts/build.sh
           bash -n scripts/install.sh
-          python3 -m py_compile airootfs/usr/local/bin/kzc-monitor
+          python3 -m py_compile profile/airootfs/usr/local/bin/kzc-monitor
           echo "--- packages ---"
           cat profile/packages.x86_64
           echo "--- check repo availability ---"

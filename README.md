@@ -161,7 +161,7 @@ See [Releases](../../releases) for ISOs plus SHA256SUMS. Verify with `sha256sum`
 
 ```text
 profile/                 archiso profile, hardened quiet boot cmdline
-airootfs/                full system overlay, see docs for contents
+profile/airootfs/       full system overlay, see docs for contents
 scripts/                 build, install, convert-arch, enroll-fido, recovery-key
 docs/                    setup, sessions, commands, features, kzc
 .devcontainer/           Codespaces build environment

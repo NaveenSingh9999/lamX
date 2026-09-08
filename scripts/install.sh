@@ -36,7 +36,7 @@ PKGS=$(grep -vE '^\s*(#|$)' profile/packages.x86_64 | tr '\n' ' ')
 pacstrap -K /mnt $PKGS
 # extras post-install via chaotic-aur: swayfx glassy, blur lock, opencode head
 arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swayfx swaylock-effects opencode-bin quickemu mpvpaper eww mpv-mpris zen-browser-bin && /usr/local/bin/lamx-glassy on" || echo "extras skipped, install manually later"
-arch-chroot /mnt bash -c "pacman -S --noconfirm distrobox podman fuse-overlayfs crun qemu-desktop virt-manager libvirt edk2-ovmf swtpm dnsmasq && systemctl enable libvirtd" 2>/dev/null || echo "vm and container stack skipped, rerun online later"
+arch-chroot /mnt bash -c "pacman -S --noconfirm distrobox podman fuse-overlayfs crun qemu-desktop virt-manager libvirt edk2-ovmf swtpm dnsmasq bpftrace linux-cachyos-hardened-headers && systemctl enable libvirtd" 2>/dev/null || echo "vm, container, and forensics stack skipped, rerun online later"
 ZEN_DESK=$(arch-chroot /mnt bash -c 'ls /usr/share/applications/*zen*.desktop 2>/dev/null | head -n1')
 if [ -n "$ZEN_DESK" ]; then
   ZEN_BASE=$(basename "$ZEN_DESK")

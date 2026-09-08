@@ -17,7 +17,7 @@ jobs:
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Syu --noconfirm archiso git base-devel sudo reflector
+          pacman -Syu --noconfirm archiso git base-devel sudo reflector pacman-contrib
 
       - name: Add CachyOS repos
         run: |
@@ -40,6 +40,12 @@ jobs:
       - name: Validate profile
         run: |
           ls -R profile scripts
+          echo "--- whale parents ---"
+          for p in gcc clang gdb boost-libs deno qt6-base perl llvm-libs; do
+            echo "== $p required by:"; pactree -r "$p" 2>/dev/null | head -n 8 || true
+          done
+          echo "--- forbidden in ISO ---"
+          grep -E "^(qemu|virt-manager|podman|distrobox|bpftrace)" profile/packages.x86_64 && exit 1 || echo "ISO list clean"
           bash -n scripts/build.sh
           bash -n scripts/install.sh
           python3 -m py_compile profile/airootfs/usr/local/bin/kzc-monitor

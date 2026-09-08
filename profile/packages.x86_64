@@ -17,7 +17,6 @@ cachyos-mirrorlist
 cachyos-v3-mirrorlist
 audit
 apparmor
-bpftrace
 fwupd
 libnotify
 
@@ -129,8 +128,7 @@ ethtool
 wakeonlan
 
 # drivers - generic Intel iGPU in ISO for boot everywhere
-# AMD and Nvidia install on demand via setup GPU chooser
-linux-cachyos-hardened-headers
+# AMD, Nvidia, headers, and bpftrace install on demand, see installer extras
 linux-firmware-whence
 sof-firmware
 alsa-firmware

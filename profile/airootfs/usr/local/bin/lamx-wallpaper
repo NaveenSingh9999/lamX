@@ -5,7 +5,7 @@ set -euo pipefail
 # extra loops in ~/Pictures/Wallpapers/live play as a slideshow.
 # usage: lamx-wallpaper
 USERDIR="$HOME/Pictures/Wallpapers/live"
-SYSVID="/usr/share/backgrounds/live/wallpaper.mp4"
+SYSVID="$HOME/Pictures/Wallpapers/live/wallpaper.mp4"
 STILL="/usr/share/backgrounds/forest-day.png"
 pkill -x mpvpaper 2>/dev/null || true
 pkill -x swaybg 2>/dev/null || true

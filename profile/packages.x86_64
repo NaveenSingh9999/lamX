@@ -76,8 +76,6 @@ zsh-completions
 bash-completion
 git
 curl
-man-db
-man-pages
 unzip
 p7zip
 htop

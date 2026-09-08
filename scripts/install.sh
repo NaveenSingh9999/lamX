@@ -46,6 +46,7 @@ if [ -n "$ZEN_DESK" ]; then
   arch-chroot /mnt chown "$USERN:$USERN" /home/"$USERN"/.config/mimeapps.list 2>/dev/null || true
 fi
 arch-chroot /mnt bash -c "pacman -S --noconfirm freetype2-macos" 2>/dev/null || echo "macOS-like freetype skipped, stock stack already tuned"
+arch-chroot /mnt bash -c "pacman -S --noconfirm man-db man-pages" 2>/dev/null || echo "man pages skipped"
 arch-chroot /mnt bash -c "pacman -S --noconfirm aide && mkdir -p /var/lib/aide && aide --init && mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz" 2>/dev/null || echo "aide skipped, KZC hashing still covers persist paths"
 
 # target needs the same repos or its kernel never updates

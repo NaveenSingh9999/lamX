@@ -74,6 +74,14 @@ case "$GPU" in
   *) echo "graphics: kept generic ISO set" ;;
 esac
 
+# 6b2 live wallpaper fetch, 48MB from releases, still image until then
+if yesno "Download the live wallpaper now? Needs network, 48MB."; then
+  mkdir -p "/home/$USERN/Pictures/Wallpapers/live"
+  curl -L -o "/home/$USERN/Pictures/Wallpapers/live/wallpaper.mp4" \
+    "https://github.com/NaveenSingh9999/lamX/releases/latest/download/wallpaper.mp4" || true
+  chown -R "$USERN:$USERN" "/home/$USERN/Pictures" 2>/dev/null || true
+fi
+
 # 6c speed versus armor - unleashed disables CPU mitigations, weaker security
 if yesno "Boot unleashed by default for max speed? Weakens exploit defenses."; then
   bootctl set-default lamx-unleashed.conf 2>/dev/null || echo "default lamx-unleashed.conf" > /boot/loader/loader.conf

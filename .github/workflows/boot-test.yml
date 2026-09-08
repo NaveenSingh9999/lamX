@@ -58,9 +58,10 @@ jobs:
 
       - name: Verify boot reached userspace
         run: |
-          grep -E "Welcome to lamX!" serial.log && echo "BANNER-PRINTED"
-          grep -E "Initial Setup|login:" serial.log && echo "USERSPACE-REACHED"
-          grep -qE "Welcome to lamX!" serial.log
+          sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' serial.log > serial.clean.log
+          grep -E "Welcome to lamX!" serial.clean.log && echo "BANNER-PRINTED"
+          grep -E "Initial Setup|login:" serial.clean.log && echo "USERSPACE-REACHED"
+          grep -qE "Welcome to lamX!" serial.clean.log
 
       - name: Upload boot log
         if: always()

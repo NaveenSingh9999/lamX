@@ -1,7 +1,7 @@
 {
   "name": "lamX codespaces",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 novnc websockify",
+  "postCreateCommand": "sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86 novnc websockify && [ -f ~/lamX-2026.09.08-x86_64.iso ] || curl -L -C - -o ~/lamX-2026.09.08-x86_64.iso https://github.com/NaveenSingh9999/lamX/releases/download/v1.5/lamX-2026.09.08-x86_64.iso",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {

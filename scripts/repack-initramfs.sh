@@ -26,6 +26,10 @@ if [ ! -f "$TMP/sqsh/etc/mkinitcpio.conf.d/archiso.conf" ]; then
   mkdir -p "$TMP/sqsh/etc/mkinitcpio.conf.d"
   cp "$REPO/profile/airootfs/etc/mkinitcpio.conf.d/archiso.conf" "$TMP/sqsh/etc/mkinitcpio.conf.d/"
 fi
+echo "restoring kernel into chroot, mkarchiso moved it out"
+mkdir -p "$TMP/sqsh/boot"
+find "$TMP/iso" -name 'vmlinuz-*' -exec cp {} "$TMP/sqsh/boot/" \;
+ls "$TMP/sqsh/boot/"
 echo "[3/4] rebuild initramfs inside real root"
 arch-chroot "$TMP/sqsh" mkinitcpio -P
 echo "[4/4] swap images back into ISO"

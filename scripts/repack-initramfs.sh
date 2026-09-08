@@ -20,7 +20,12 @@ SFS=$(echo "$TMP"/iso/*/x86_64/airootfs.sfs)
 [ -f "$SFS" ] || { echo "airootfs image not found"; exit 1; }
 echo "[2/4] unsquash root"
 unsquashfs -d "$TMP/sqsh" "$SFS" >/dev/null
-test -f "$TMP/sqsh/etc/mkinitcpio.conf.d/archiso.conf" || { echo "hooks drop-in missing from image"; exit 1; }
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+if [ ! -f "$TMP/sqsh/etc/mkinitcpio.conf.d/archiso.conf" ]; then
+  echo "drop-in missing from image, planting from repo"
+  mkdir -p "$TMP/sqsh/etc/mkinitcpio.conf.d"
+  cp "$REPO/profile/airootfs/etc/mkinitcpio.conf.d/archiso.conf" "$TMP/sqsh/etc/mkinitcpio.conf.d/"
+fi
 echo "[3/4] rebuild initramfs inside real root"
 arch-chroot "$TMP/sqsh" mkinitcpio -P
 echo "[4/4] swap images back into ISO"

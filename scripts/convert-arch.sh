@@ -37,6 +37,8 @@ EXCL=(etc/shadow etc/gshadow etc/passwd etc/group etc/fstab etc/crypttab etc/cry
 TAR_EXCL=()
 for e in "${EXCL[@]}"; do TAR_EXCL+=(--exclude="$e"); done
 tar -C "$REPO_DIR/profile/airootfs" -cf - "${TAR_EXCL[@]}" . | tar -C / -xf -
+mkdir -p /usr/lib/librewolf/distribution
+cp "$REPO_DIR/profile/librewolf-policies.json" /usr/lib/librewolf/distribution/policies.json 2>/dev/null || true
 cp "$REPO_DIR/profile/mkinitcpio.conf.lamx" /etc/mkinitcpio.conf
 rm -f /etc/mkinitcpio.conf.d/archiso.conf
 mkinitcpio -P 2>/dev/null || echo "initramfs regen skipped"

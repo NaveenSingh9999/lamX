@@ -56,6 +56,8 @@ UUID=$(blkid -s UUID -o value "$ROOT")
 cp /mnt/etc/shadow /tmp/lamx-shadow.target
 cp /mnt/etc/gshadow /tmp/lamx-gshadow.target
 cp -r profile/airootfs/* /mnt/ || true
+mkdir -p /mnt/usr/lib/librewolf/distribution
+cp profile/librewolf-policies.json /mnt/usr/lib/librewolf/distribution/policies.json
 cp /tmp/lamx-shadow.target /mnt/etc/shadow
 cp /tmp/lamx-gshadow.target /mnt/etc/gshadow
 cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf

@@ -9,5 +9,6 @@ WORK="$(dirname "$0")/../work"
 sudo rm -rf "$OUT" "$WORK"
 mkdir -p "$OUT" "$WORK"
 sudo mkarchiso -v -w "$WORK" -o "$OUT" "$PROFILE"
+sudo "$(dirname "$0")/repack-initramfs.sh" "$OUT"/*.iso
 echo "ISO in $OUT"
 ls -lh "$OUT"

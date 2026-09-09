@@ -7,13 +7,14 @@ set $mod Mod4
 output * bg #0a0e1a solid_color
 exec swaybg -o '*' -c '#0a0e1a'
 exec lamx-wallpaper
+exec lamx-display
 exec eww daemon --config /etc/xdg/eww 2>/dev/null; eww open clock --config /etc/xdg/eww 2>/dev/null || true
 exec mako
 exec waybar
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec ~/.config/sway-welcome.sh
 exec kzc-greet
-exec swayidle -w timeout 60 'swaylock -f -c 0a0e1a' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock -f -c 0a0e1a'
+exec swayidle -w timeout 60 'lamx-lock' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'lamx-lock'
 
 gaps inner 10
 gaps outer 8

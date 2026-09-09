@@ -11,7 +11,7 @@ install -m755 /dev/stdin /usr/local/bin/lamx-powermenu <<'EOF'
 #!/usr/bin/env bash
 OPT=$(printf 'Lock\nLogout\nSuspend\nReboot\nPoweroff' | wofi --show dmenu -p ">" -i) || exit 0
 case "$OPT" in
-  Lock) swaylock -f -c 0a0e1a 2>/dev/null || loginctl lock-session ;;
+  Lock) lamx-lock 2>/dev/null || loginctl lock-session ;;
   Logout) swaymsg exit 2>/dev/null || hyprctl dispatch exit 2>/dev/null || loginctl terminate-user "$USER" ;;
   Suspend) systemctl suspend ;;
   Reboot) systemctl reboot ;;
@@ -45,15 +45,16 @@ set $tx #e5e5e5
 set $wr #ef4444
 
 output * bg $bg solid_color
-output * mode 1920x1080
+output * bg #0a0e1a solid_color
 exec waybar
 exec mako
 exec lamx-wallpaper
+exec lamx-display
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec ~/.config/sway-welcome.sh
 exec kzc-greet
 exec eww daemon --config /etc/xdg/eww 2>/dev/null; eww open clock --config /etc/xdg/eww 2>/dev/null || true
-exec swayidle -w timeout 60 'swaylock -f -c 0a0e1a' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'swaylock -f -c 0a0e1a'
+exec swayidle -w timeout 60 'lamx-lock' timeout 300 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' before-sleep 'lamx-lock'
 
 title_align center
 font pango:IosevkaTerm Nerd Font 10
@@ -146,7 +147,7 @@ bindsym $mod+Return mode "launch"
 bindsym $mod+d exec $menu
 bindsym $mod+space exec lamx-spotlight
 bindsym $mod+Shift+u mode "swap"
-bindsym $mod+Shift+x exec swaylock -f -c 0a0e1a
+bindsym $mod+Shift+x exec lamx-lock
 bindsym $mod+Shift+e exec lamx-powermenu
 bindsym Print exec lamx-shot
 bindsym $mod+Print exec lamx-shot full
@@ -193,12 +194,12 @@ EOF
 # ---- hyprland, nv8v motion plus bibjaw99 submaps, lamX apps ----
 cat > /etc/xdg/hypr/hyprland.conf <<'EOF'
 # lamX hyprland - motion from nv8v/workstation, keychords from bibjaw99/workstation
-monitor = ,1920x1080@60,auto,1
+monitor = ,preferred,auto,1
 $mainMod = SUPER
 $terminal = foot
 $browser = zen
 $menu = wofi --show drun -p ">"
-$lockscreen = swaylock -f -c 0a0e1a
+$lockscreen = lamx-lock
 $resetSubMap = hyprctl dispatch submap reset
 $toggle_floating_window = hyprctl dispatch togglefloating; hyprctl dispatch centerwindow
 
@@ -208,7 +209,7 @@ exec-once = lamx-wallpaper
 exec-once = /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec-once = kzc-greet
 exec-once = sh -c 'eww daemon --config /etc/xdg/eww; eww open clock --config /etc/xdg/eww'
-exec-once = swayidle -w timeout 60 'swaylock -f -c 0a0e1a' timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' before-sleep 'swaylock -f -c 0a0e1a'
+exec-once = swayidle -w timeout 60 'lamx-lock' timeout 300 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on' before-sleep 'lamx-lock'
 
 input {
   kb_layout = us
@@ -283,7 +284,7 @@ bind = $mainMod SHIFT, 7, movetoworkspacesilent, 7
 bind = $mainMod SHIFT, 8, movetoworkspacesilent, 8
 bind = $mainMod, Tab, workspace, e+1
 bind = Mod1, Tab, workspace, e-1
-bind = $mainMod SHIFT, X, exec, $lockscreen
+bind = $mainMod SHIFT, X, exec, lamx-lock
 bind = $mainMod SHIFT, Q, killactive,
 bind = $mainMod, m, fullscreen, 1
 bind = $mainMod, Space, exec, $toggle_floating_window

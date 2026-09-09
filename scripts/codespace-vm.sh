@@ -30,14 +30,19 @@ case "${1:-}" in
     ISO="$(realpath "$ISO")"
     MAGIC=$(dd if="$ISO" bs=1 skip=32769 count=5 2>/dev/null)
     [ "$MAGIC" = "CD001" ] || { echo "not an ISO image: $ISO"; exit 1; }
-    command -v qemu-system-x86_64 >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq qemu-system-x86 novnc websockify; }
+    if [ ! -f "$VM_DIR/disk.img" ]; then
+      echo "creating 10G disk at $VM_DIR/disk.img"
+      qemu-img create -f qcow2 "$VM_DIR/disk.img" 10G
+    fi
+    command -v qemu-system-x86_64 >/dev/null || { sudo apt-get update -qq; sudo apt-get install -y -qq qemu-system-x86 qemu-utils novnc websockify; }
     command -v websockify >/dev/null || sudo apt-get install -y -qq novnc websockify
     mkdir -p "$VM_DIR"
     "$0" stop >/dev/null 2>&1 || true
     echo "booting $ISO (emulated, first boot takes minutes)"
     # shellcheck disable=SC2086
     qemu-system-x86_64 -accel tcg,thread=multi -m 3072 -smp 2 \
-      -drive "file=$ISO,media=cdrom,readonly=on" -boot order=d -vga virtio \
+      -drive "file=$ISO,media=cdrom,readonly=on" -drive "file=$VM_DIR/disk.img,format=qcow2,if=virtio" \
+      -boot order=d -vga virtio \
       -display none -vnc :0 -serial "file:$LOG" >"$QEMU_LOG" 2>&1 &
     echo $! > "$PID_QEMU"
     echo "qemu-system-x86_64 -cdrom $ISO -boot order=d" > "$CMDLOG"

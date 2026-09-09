@@ -2,18 +2,25 @@
 set -euo pipefail
 # wallpaper - standard live engine. loops video via mpvpaper,
 # still image fallback when no video or no mpvpaper.
-# extra loops in ~/Pictures/Wallpapers/live play as a slideshow.
+# first run fetches the signature loop once, extra loops slideshow.
 # usage: lamx-wallpaper
 USERDIR="$HOME/Pictures/Wallpapers/live"
-SYSVID="$HOME/Pictures/Wallpapers/live/wallpaper.mp4"
 STILL="/usr/share/backgrounds/forest-day.png"
+GOT="$HOME/.config/lamx-wallpaper-fetched"
+if [ ! -f "$USERDIR/wallpaper.mp4" ] && [ ! -f "$GOT" ]; then
+  mkdir -p "$USERDIR"
+  if curl -sSL -m 90 -o "$USERDIR/wallpaper.mp4" \
+    "https://github.com/NaveenSingh9999/lamX/releases/latest/download/wallpaper.mp4"; then
+    mkdir -p "$HOME/.config" && touch "$GOT"
+  else
+    rm -f "$USERDIR/wallpaper.mp4"
+  fi
+fi
 pkill -x mpvpaper 2>/dev/null || true
 pkill -x swaybg 2>/dev/null || true
 if command -v mpvpaper >/dev/null; then
   if [ -n "$(find "$USERDIR" -type f \( -name '*.mp4' -o -name '*.mkv' -o -name '*.webm' \) 2>/dev/null | head -n1)" ]; then
     exec mpvpaper -f -p --auto-pause -n --slideshow ALL "$USERDIR" -o "no-audio loop hwdec=auto" >/dev/null 2>&1
-  else
-    exec mpvpaper -f -p --auto-pause ALL "$SYSVID" -o "no-audio loop hwdec=auto" >/dev/null 2>&1
   fi
 fi
 swaybg -o '*' -i "$STILL" >/dev/null 2>&1 &

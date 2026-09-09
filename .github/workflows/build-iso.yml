@@ -63,6 +63,13 @@ jobs:
           ./scripts/build.sh
           ls -lh out/
 
+      - name: Verify boot structure
+        run: |
+          sudo pacman -S --noconfirm genisoimage
+          isoinfo -d -i out/*.iso | tee bootinfo.txt
+          grep -qi "eltorito" bootinfo.txt
+          xorriso -indev out/*.iso -find / -name 'isolinux.bin' -o -name 'menu.c32' 2>/dev/null | head -n 5
+
       - name: Upload ISO
         if: success()
         uses: actions/upload-artifact@v4

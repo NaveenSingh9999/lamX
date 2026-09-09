@@ -12,6 +12,7 @@ TMP="$(mktemp -d)"
 cleanup() { umount "$TMP/sqsh" 2>/dev/null || true; rm -rf "$TMP"; }
 trap cleanup EXIT
 command -v xorriso >/dev/null || pacman -S --noconfirm libisoburn
+command -v isoinfo >/dev/null || pacman -S --noconfirm genisoimage
 command -v unsquashfs >/dev/null || pacman -S --noconfirm squashfs-tools
 command -v arch-chroot >/dev/null || pacman -S --noconfirm arch-install-scripts
 echo "[1/4] extract ISO"
@@ -41,4 +42,6 @@ for img in "$TMP"/sqsh/boot/initramfs-*.img; do
   xorriso -dev "$ISO" -update "$img" "$isopath" -commit >/dev/null
   echo "updated $isopath"
 done
+echo "verifying El Torito boot record survived"
+isoinfo -d -i "$ISO" | grep -qi "eltorito" || { echo "BOOT-RECORD-BROKEN"; exit 1; }
 echo "repacked $ISO"

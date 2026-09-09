@@ -14,7 +14,7 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 
 - [Docs](docs/README.md) — index of all guides
 - [Features](#features) · [Graphics](#graphics-and-hardware-acceleration) · [Requirements](#minimum-requirements)
-- [Install](#install) · [Daily use](#daily-use) · [Build](#build-from-source)
+- [Install](#install) · [Daily use](#daily-use) · [Build](#build-from-source) · [Test](#test)
 - [Security model](#security-model) · [Releases](#releases) · [Status](#status)
 
 ---
@@ -24,7 +24,9 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 | Area | What you get |
 |---|---|
 | **Base** | CachyOS hardened kernel, Arch userland, systemd, Btrfs with zstd plus Snapper timelines, zram, quiet fast boot, no network wait |
-| **Desktop** | Sway by default for battery, Hyprland session for bezier animations, transparent Waybar, Wofi, Foot, Mako, eww center clock, live video wallpaper with still fallback |
+| **Desktop** | Sway keychord modes plus app-pinned workspaces, Hyprland fluent bounce motion, transparent Waybar, Wofi, Foot, Mako, eww center clock, live video wallpaper with still fallback |
+| **Display** | Max resolution plus max refresh auto-set every login, adaptive sync and VRR, 1080p fallback, wlr-randr for changes |
+| **Lock** | hyprlock face with lamX mark over blur and clock, swaylock-effects face with screenshot blur and date, one lamx-lock entry |
 | **Search** | Spotlight on Mod+Space: calc, instant file index, music, web, apps |
 | **Music** | ytfzf plus mpv streaming from YouTube, no accounts, realtime audio path, media keys everywhere |
 | **Text** | Apple-grade rendering preset, IosevkaTerm Nerd Font throughout, zsh with autosuggest plus highlighting plus Pure prompt |
@@ -35,11 +37,13 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 | **Dev** | Distrobox isolation, Podman, man pages, completions, QEMU stack one command away |
 | **VMs** | Quickemu for instant ISO tests, virt-manager full GUI, both one command away post-install |
 
+Desktop styling ships through the installer, never bloating the ISO. Sway structure follows bibjaw99/workstation, Hyprland motion follows nv8v/workstation, apps and colors stay lamX.
+
 ---
 
 ## Graphics and hardware acceleration
 
-One ISO boots every x86_64 machine. Both CPU microcodes ship natively, generic Mesa covers display out of the box, and the setup chooser installs your full stack or skips it.
+One ISO boots every x86_64 machine. Both CPU microcodes ship natively, generic Mesa covers display out of the box, every output jumps to its max mode and refresh at login, and the setup chooser installs your full stack or skips it.
 
 | GPU | Stack | Acceleration |
 |---|---|---|
@@ -61,14 +65,14 @@ Estimated from the package set. Measured boot plus desktop numbers land after ha
 | CPU | Any 64-bit x86, 2 cores, Intel or AMD | 2015 or newer for v3 optimized repos |
 | RAM | 2 GB to boot live | 4 GB Sway daily, 8 GB Hyprland plus browser |
 | Disk | 12 GB install | 25 GB plus room for Snapper timelines |
-| Boot | UEFI | UEFI plus TPM 2.0 for passwordless disk |
+| Boot | UEFI or BIOS | UEFI plus TPM 2.0 for passwordless disk |
 | Network | Needed once for install | Always on for updates and sync |
 
 ---
 
 ## Install
 
-You need an x86_64 laptop, UEFI, a 4 GB USB stick, and internet. **The installer wipes the target disk.**
+You need an x86_64 laptop, UEFI or BIOS boot, a 4 GB USB stick, and internet. **The installer wipes the target disk.**
 
 ### 1. Flash
 
@@ -76,8 +80,6 @@ You need an x86_64 laptop, UEFI, a 4 GB USB stick, and internet. **The installer
 lsblk   # identify the USB stick, triple check
 sudo dd if=lamX-<date>-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 ```
-
-Boot the USB in UEFI mode.
 
 ### 2. Network, then install
 
@@ -87,7 +89,7 @@ lsblk   # identify the target disk
 sudo ./scripts/install.sh /dev/nvme0n1 lamx
 ```
 
-The installer partitions, encrypts with LUKS2, lays Btrfs subvolumes, installs the full set, writes both boot entries (`lamX` default, `lamX unleashed` without CPU mitigations), enables every service, enrolls TPM2 plus PIN, and asks for an initial login PIN.
+The installer partitions, encrypts with LUKS2, lays Btrfs subvolumes, installs the full set, writes both boot entries (`lamX` default, `lamX unleashed` without CPU mitigations), enables every service, enrolls TPM2 plus PIN, and asks for an initial login PIN. Root carries the same PIN hash for emergency recovery.
 
 ### 3. First boot
 
@@ -95,7 +97,7 @@ The installer partitions, encrypts with LUKS2, lays Btrfs subvolumes, installs t
 sudo lamx-setup
 ```
 
-Timezone, keyboard, device name, TOTP QR for Aegis, phone FIDO enroll, WiFi, GPU chooser, speed-versus-armor question, snapshot baseline, KZC check. Runs once.
+Timezone, keyboard, device name, TOTP QR for Aegis, phone FIDO enroll, WiFi, GPU chooser, live wallpaper fetch, speed-versus-armor question, snapshot baseline, KZC check. Runs once.
 
 ```bash
 lamx-help   # every command, anytime
@@ -122,9 +124,10 @@ kzc-dashboard                              # local GUI in browser
 lamx-phone link user@phone-ip              # then push, pull, notify, status
 lamx-vpn on | lamx-backup /mnt/backup
 sudo lamx-xtreme on | sudo lamx-idle on
+lamx-wallpaper | lamx-display              # refresh loop or max out displays
 ```
 
-Keys match in both sessions: `Mod+Enter` terminal, `Mod+D` launcher, `Mod+Space` spotlight, `Mod+M` music. Auto-lock after 60 seconds.
+Keys match in both sessions: `Mod+Enter` terminal, `Mod+D` launcher, `Mod+Space` spotlight, `Mod+M` music, `Mod+Shift+E` power menu, `Print` screenshot. Auto-lock after 60 seconds.
 
 Full reference: [Commands](docs/commands.md). Sessions and switching: [Sessions](docs/sessions.md). Security design: [KZC](docs/kzc.md).
 
@@ -141,19 +144,38 @@ cd lamX
 gh workflow run build-iso # cloud build, roughly 20 minutes
 ```
 
-Generic CachyOS repos build on any x86_64 runner. Switch to v3 or v4 repos on your laptop afterwards for speed.
+The ISO initramfs gets live hooks through a post-build repack that preserves the boot record, verified in CI. Generic CachyOS repos build on any x86_64 runner. Switch to v3 or v4 repos on your laptop afterwards for speed.
+
+---
+
+## Test
+
+Every ISO boots headless in QEMU before release:
+
+```bash
+gh workflow run boot-test --repo NaveenSingh9999/lamX -f run_id=<build-id>
+```
+
+Serial console proves media mount plus full userspace plus the lamX banner. For interactive testing in Codespaces with a browser display:
+
+```bash
+./scripts/codespace-vm.sh ~/lamX-<date>-x86_64.iso vnc   # browser via port 6080
+./scripts/codespace-vm.sh ~/lamX-<date>-x86_64.iso term  # serial in this terminal
+```
+
+Privileged container plus KVM gives host CPU speed, emulation otherwise. Codespaces arrive with the release ISO pre-fetched.
 
 ---
 
 ## Security model
 
-Single user, root login disabled, console login only after LUKS decrypt. Hardened kernel with lockdown confidentiality, slab and allocator defenses, quiet hardened cmdline. AppArmor enforce, audit rules on identity, privilege, modules, persist paths. KZC scores anomalies locally with decay and allowlist, quarantines with restore, alerts once. No Secure Boot and no incoming firewall by owner choice.
+Single user, root login disabled on installed targets with PIN hash kept for emergency recovery, live media root open by design, console login only after LUKS decrypt. Hardened kernel with lockdown confidentiality, slab and allocator defenses, quiet hardened cmdline. AppArmor enforce, audit rules on identity, privilege, modules, persist paths. KZC scores anomalies locally with decay and allowlist, quarantines with restore, warns, asks, acts through its head daemon, alerts once. No Secure Boot and no incoming firewall by owner choice.
 
 ---
 
 ## Releases
 
-See [Releases](../../releases) for ISOs plus SHA256SUMS. Verify with `sha256sum`.
+See [Releases](../../releases) for ISOs plus SHA256SUMS plus the live wallpaper loop. Verify with `sha256sum`.
 
 ---
 
@@ -161,15 +183,17 @@ See [Releases](../../releases) for ISOs plus SHA256SUMS. Verify with `sha256sum`
 
 ```text
 profile/                 archiso profile, hardened quiet boot cmdline
-profile/airootfs/       full system overlay, see docs for contents
-scripts/                 build, install, convert-arch, enroll-fido, recovery-key
+profile/airootfs/        live system overlay
+scripts/                 build, repack, install, convert-arch, apply-desktop,
+                         enroll-fido, recovery-key, codespace-vm
 docs/                    setup, sessions, commands, features, kzc
-.devcontainer/           Codespaces build environment
-.github/workflows/      build-iso (manual plus tags), promote-release
+assets/                  release-hosted extras like the wallpaper loop
+.devcontainer/           codespaces default plus arch build env
+.github/workflows/      build-iso (manual plus tags), boot-test, promote-release
 ```
 
 ---
 
 ## Status
 
-v1.0 main release. Validated statically end to end: every script parses, every service resolves, every enabled unit maps to an installed package, installer traced step by step. Hardware validation (TPM behavior per vendor, real boot minutes) waits on physical hardware.
+v1.6 released and boot-proven in CI. Current build carries the desktop applier, max display setup, branded lock faces, and wallpaper auto-fetch. Hardware validation continues on real machines.

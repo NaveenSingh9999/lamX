@@ -13,6 +13,15 @@ fi
 read -rp "Wipe $DISK and install lamX? [y/N] " c
 [ "$c" = "y" ] || exit 1
 
+# installer needs the same repos as the ISO profile, live media may lack them
+pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com || true
+pacman-key --lsign-key F3B607488DB35A47 || true
+pacman -U --noconfirm \
+  'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-keyring-20240331-1-any.pkg.tar.zst' \
+  'https://mirror.cachyos.org/repo/x86_64/cachyos/cachyos-mirrorlist-27-1-any.pkg.tar.zst' || true
+grep -q "^\[cachyos\]" /etc/pacman.conf || printf '\n[cachyos]\nInclude = /etc/pacman.d/cachyos-mirrorlist\n' >> /etc/pacman.conf
+pacman -Sy --noconfirm
+
 parted -s "$DISK" mklabel gpt mkpart ESP fat32 1MiB 513MiB set 1 esp on mkpart root 513MiB 100%
 ESP="${DISK}p1"; ROOT="${DISK}p2"
 [ -e "$ESP" ] || { ESP="${DISK}1"; ROOT="${DISK}2"; }

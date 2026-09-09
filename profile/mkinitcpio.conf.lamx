@@ -2,6 +2,6 @@
 MODULES=()
 BINARIES=()
 FILES=()
-HOOKS=(base systemd autodetect microcode modconf kms keyboard keymap consolefont block filesystems fsck)
+HOOKS=(base systemd autodetect microcode modconf kms keyboard keymap consolefont block sd-encrypt filesystems fsck)
 COMPRESSION="zstd"
 COMPRESSION_OPTIONS=(-19 -T0)

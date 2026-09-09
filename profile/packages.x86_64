@@ -25,6 +25,7 @@ syslinux
 efibootmgr
 dosfstools
 parted
+arch-install-scripts
 
 # single-user + login (passwordless-ready, no passwords stored)
 greetd

@@ -39,7 +39,7 @@ for img in "$TMP"/sqsh/boot/initramfs-*.img; do
   dest=$(find "$TMP/iso" -name "$base" | head -n1)
   [ -n "$dest" ] || { echo "no slot for $base"; exit 1; }
   isopath="/${dest#"$TMP/iso/"}"
-  xorriso -dev "$ISO" -update "$img" "$isopath" -commit >/dev/null
+  xorriso -dev "$ISO" -boot_image any keep -update "$img" "$isopath" -commit >/dev/null
   echo "updated $isopath"
 done
 echo "verifying El Torito boot record survived"

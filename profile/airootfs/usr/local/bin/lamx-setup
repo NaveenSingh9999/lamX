@@ -36,13 +36,14 @@ if [ ! -f /etc/users.oath ]; then
   SECRET=$(head -c 20 /dev/urandom | base32 | tr -d '=' | cut -c1-32)
   echo "HOTP/T30/6 $USERN - $SECRET" > /etc/users.oath
   chmod 600 /etc/users.oath
-  URI="otpauth://totp/device:$USERN?secret=$SECRET&issuer=device&period=30&digits=6"
-  clear
-  echo "$URI" | qrencode -t ANSIUTF8 || echo "$URI"
-  echo ""
-  echo "Scan above in Aegis on your phone, then press Enter."
-  read -r _
 fi
+SECRET=$(awk '{print $NF}' /etc/users.oath)
+URI="otpauth://totp/device:$USERN?secret=$SECRET&issuer=device&period=30&digits=6"
+clear
+echo "$URI" | qrencode -t ANSIUTF8 || echo "$URI"
+echo ""
+echo "Scan above in Aegis on your phone, then press Enter."
+read -r _
 
 # 5 phone FIDO2 via USB
 if yesno "Connect phone via USB now to enroll as hardware key?"; then

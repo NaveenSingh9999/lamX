@@ -37,6 +37,8 @@ EXCL=(etc/shadow etc/gshadow etc/passwd etc/group etc/fstab etc/crypttab etc/cry
 TAR_EXCL=()
 for e in "${EXCL[@]}"; do TAR_EXCL+=(--exclude="$e"); done
 tar -C "$REPO_DIR/profile/airootfs" -cf - "${TAR_EXCL[@]}" . | tar -C / -xf -
+cp "$REPO_DIR/scripts/apply-desktop.sh" /usr/local/bin/apply-desktop.sh
+/usr/local/bin/apply-desktop.sh || echo "desktop styling skipped"
 mkdir -p /usr/lib/librewolf/distribution
 cp "$REPO_DIR/profile/librewolf-policies.json" /usr/lib/librewolf/distribution/policies.json 2>/dev/null || true
 cp "$REPO_DIR/profile/mkinitcpio.conf.lamx" /etc/mkinitcpio.conf

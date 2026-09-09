@@ -103,6 +103,7 @@ brightnessctl
 grim
 slurp
 wl-clipboard
+wlr-randr
 power-profiles-daemon
 
 # 2 - updates and power, single stack

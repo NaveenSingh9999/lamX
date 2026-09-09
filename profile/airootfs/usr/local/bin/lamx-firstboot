@@ -6,9 +6,8 @@ if [ -t 0 ] && command -v whiptail >/dev/null 2>&1; then
   exec /usr/local/bin/lamx-setup
 fi
 echo "=== initial setup for $USERN ==="
-# shellcheck disable=SC1091
-[ -f /usr/local/lib/lamx-pam.sh ] && . /usr/local/lib/lamx-pam.sh
-command -v pam-wire >/dev/null && { pam-wire /etc/pam.d/sudo; pam-wire /etc/pam.d/greetd; } || true
+# no PAM wiring here: keys enroll in interactive setup, wiring early
+# would demand codes the user was never shown
 mkdir -p /etc/pam-u2f
 touch /etc/pam-u2f/authfile
 chmod 600 /etc/pam-u2f/authfile

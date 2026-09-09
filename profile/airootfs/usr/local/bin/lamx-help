@@ -14,6 +14,8 @@ commands:
 look:
   lamx-wallpaper                             live video loop, still fallback
   lamx-wallpaper-fetch <url>                 add open loops via yt-dlp
+  Print shot, Shift+Print file, Mod+Shift+E power menu
+  wlr-randr --output X --mode 1920x1080     change resolution anytime
 
 music:
   lamx-music [terms]                     stream YouTube audio, wofi in GUI

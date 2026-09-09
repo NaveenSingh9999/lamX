@@ -69,6 +69,8 @@ cp /mnt/etc/gshadow /tmp/lamx-gshadow.target
 cp -r profile/airootfs/* /mnt/ || true
 mkdir -p /mnt/usr/lib/librewolf/distribution
 cp profile/librewolf-policies.json /mnt/usr/lib/librewolf/distribution/policies.json
+cp scripts/apply-desktop.sh /mnt/usr/local/bin/apply-desktop.sh
+arch-chroot /mnt /usr/local/bin/apply-desktop.sh || echo "desktop styling skipped, rerun apply-desktop.sh later"
 cp /tmp/lamx-shadow.target /mnt/etc/shadow
 cp /tmp/lamx-gshadow.target /mnt/etc/gshadow
 cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf

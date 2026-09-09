@@ -12,7 +12,7 @@ TMP="$(mktemp -d)"
 cleanup() { umount "$TMP/sqsh" 2>/dev/null || true; rm -rf "$TMP"; }
 trap cleanup EXIT
 command -v xorriso >/dev/null || pacman -S --noconfirm libisoburn
-command -v isoinfo >/dev/null || pacman -S --noconfirm genisoimage
+command -v isoinfo >/dev/null || pacman -S --noconfirm cdrtools
 command -v unsquashfs >/dev/null || pacman -S --noconfirm squashfs-tools
 command -v arch-chroot >/dev/null || pacman -S --noconfirm arch-install-scripts
 echo "[1/4] extract ISO"

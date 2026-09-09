@@ -38,9 +38,14 @@ case "${1:-}" in
     command -v websockify >/dev/null || sudo apt-get install -y -qq novnc websockify
     mkdir -p "$VM_DIR"
     "$0" stop >/dev/null 2>&1 || true
-    echo "booting $ISO (emulated, first boot takes minutes)"
+    echo "booting $ISO (kvm if present, else emulated)"
+    if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then
+      ACCEL="-machine accel=kvm -cpu host"
+    else
+      ACCEL="-accel tcg,thread=multi"
+    fi
     # shellcheck disable=SC2086
-    qemu-system-x86_64 -accel tcg,thread=multi -m 3072 -smp 2 \
+    qemu-system-x86_64 $ACCEL -m 3072 -smp 2 \
       -drive "file=$ISO,media=cdrom,readonly=on" -drive "file=$VM_DIR/disk.img,format=qcow2,if=virtio" \
       -boot order=d -vga virtio \
       -display none -vnc :0 -serial "file:$LOG" >"$QEMU_LOG" 2>&1 &

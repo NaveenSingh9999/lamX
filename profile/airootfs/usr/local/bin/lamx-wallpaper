@@ -17,10 +17,15 @@ if [ ! -f "$USERDIR/wallpaper.mp4" ] && [ ! -f "$GOT" ]; then
   fi
 fi
 pkill -x mpvpaper 2>/dev/null || true
-pkill -x swaybg 2>/dev/null || true
 if command -v mpvpaper >/dev/null; then
   if [ -n "$(find "$USERDIR" -type f \( -name '*.mp4' -o -name '*.mkv' -o -name '*.webm' \) 2>/dev/null | head -n1)" ]; then
     exec mpvpaper -f -p --auto-pause -n --slideshow ALL "$USERDIR" -o "no-audio loop hwdec=auto" >/dev/null 2>&1
   fi
 fi
-swaybg -o '*' -i "$STILL" >/dev/null 2>&1 &
+if command -v xfconf-query >/dev/null; then
+  for p in /backdrop/screen0/monitor0/workspace0/last-image /backdrop/screen0/monitorLVDS-1/workspace0/last-image; do
+    xfconf-query -c xfce4-desktop -p "$p" -s "$STILL" 2>/dev/null || true
+  done
+  exit 0
+fi
+echo "no wallpaper backend found"

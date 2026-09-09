@@ -98,8 +98,9 @@ systemctl enable --now kzc-monitor kzc-notify auditd || true
 loginctl enable-linger "$USERN" || true
 
 # 9 finish
+/usr/local/bin/apply-desktop.sh 2>/dev/null || echo "desktop styling skipped, run apply-desktop.sh later"
 mkdir -p "/home/$USERN/.config"
 touch "/home/$USERN/.config/.setup-done"
 chown -R "$USERN:$USERN" "/home/$USERN/.config" || true
-msg "Setup complete. Use 'lamx-help' for commands. GUI starts with Sway."
+msg "Setup complete. Use 'lamx-help' for commands. Log out and back in for the full desktop."
 systemctl disable lamx-firstboot || true

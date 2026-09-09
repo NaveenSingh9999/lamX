@@ -26,7 +26,7 @@ Kill escapes, quarantine persist droppers with a restore manifest, lock sessions
 
 ## 4. Head
 
-`kzc-head` daemon is the decision head. Critical scores act at once plus notify. Medium scores pop a wofi question with Quarantine, Allow always, Allow once, Watch, defaulting safe on timeout. TTY sessions get a wall broadcast instead. Every decision lands in `decisions.log` plus a review queue.
+`kzc-head` daemon is the decision head. Critical scores act at once plus notify. Medium scores pop a rofi question with Quarantine, Allow always, Allow once, Watch, defaulting safe on timeout. TTY sessions get a wall broadcast instead. Every decision lands in `decisions.log` plus a review queue.
 
 `opencode-kzc` serves the kzc-head agent as auditor over every decision. Live consult flips on with `KZC_CONSULT=1`, but opencode needs a model backend to think, so the rule head stays in charge for millisecond offline guarantees. The dashboard shows status, ranked suspects, quarantine with one-click restore, alerts, and config.
 

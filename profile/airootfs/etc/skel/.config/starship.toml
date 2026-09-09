@@ -1,0 +1,46 @@
+# lamX starship - modern nerd-font look, transient clean lines
+format = """$os$username$hostname$directory$git_branch$git_status$fill$cmd_duration$line_break$character"""
+add_newline = true
+palette = "lamx"
+
+[palettes.lamx]
+blue = "#60a5fa"
+cyan = "#22d3ee"
+gray = "#94a3b8"
+green = "#22c55e"
+red = "#ef4444"
+yellow = "#eab308"
+
+[os]
+disabled = false
+style = "bold blue"
+symbols = { Arch = " ", Linux = "🐧 " }
+
+[username]
+show_always = true
+style_user = "bold cyan"
+format = "[$user]($style) "
+
+[directory]
+style = "bold blue"
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+style = "bold green"
+format = "[$symbol$branch]($style) "
+
+[git_status]
+style = "bold red"
+format = "[$all_status$ahead_behind]($style) "
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
+[cmd_duration]
+min_time = 2000
+style = "bold yellow"
+
+[line_break]
+disabled = false

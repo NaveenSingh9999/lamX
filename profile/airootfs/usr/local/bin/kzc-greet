@@ -6,10 +6,8 @@ FLAG="$HOME/.config/.kzc-greeted"
 [ -f "$FLAG" ] && exit 0
 mkdir -p "$HOME/.config"
 ST="monitor $(systemctl is-active kzc-monitor 2>/dev/null || echo off)"
-if [ -n "${WAYLAND_DISPLAY:-}${DISPLAY:-}" ]; then
-  swaynag -t warning \
-    -m "Protection active ($ST). Press Mod+Space to search, Mod+M for music. Run lamx-help for commands." \
-    -b "Show commands" "foot lamx-help" -b "Begin" "dismiss" &
+if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+  notify-send "Protection active ($ST)" "Mod+Space to search. Run lamx-help for commands." || true
 else
   echo "Protection active ($ST). Run lamx-help for commands."
 fi

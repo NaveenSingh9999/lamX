@@ -28,11 +28,10 @@ zi ice joshskidmore/zsh-fzf-history-search
 zi ice atload'bindkey "^I" menu-select'
 zi light marlonrichert/zsh-autocomplete
 
-# pure prompt, async git, minimal two lines
-zinit ice pick"async.zsh" src"pure.zsh"
-zinit light sindresorhus/pure
+# starship prompt, modern nerd-font preset
+eval "$(starship init zsh)"
 
 alias ll='ls -lah'
 export EDITOR=nvim
-export TERMINAL=foot
+export TERMINAL=xfce4-terminal
 [ ! -f "$HOME/.config/.setup-done" ] && echo "Run 'sudo lamx-setup' for first-time setup. 'lamx-help' for commands."

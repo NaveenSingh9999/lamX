@@ -18,7 +18,7 @@ look:
   wlr-randr --output X --mode 1920x1080     change resolution anytime
 
 music:
-  lamx-music [terms]                     stream YouTube audio, wofi in GUI
+  lamx-music [terms]                     stream YouTube audio, rofi menu in GUI
   lamx-music -q [terms]                  queue mode, -s subscriptions
   media keys play, next, prev work in both sessions. Mod+M opens music.
 
@@ -63,7 +63,6 @@ keys:
   enroll hardware key later: same command with key inserted.
 
 session:
-  Sway default for battery. Hyprland at login for smooth animations.
-  Keys same both: Mod+Enter terminal, Mod+D launcher, Mod+Shift+E exit.
-  auto-lock 60s. lid close locks.
+  XFCE desktop. Ctrl+Alt+T terminal, Super+Space search, Super+M music.
+  screen locks on idle, lid close locks.
 EOF

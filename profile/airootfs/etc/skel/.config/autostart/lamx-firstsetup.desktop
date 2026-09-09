@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=lamX first setup finish
+Exec=sh -c 'pkexec /usr/local/bin/apply-desktop.sh'

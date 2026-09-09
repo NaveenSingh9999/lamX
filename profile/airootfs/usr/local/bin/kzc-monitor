@@ -31,7 +31,7 @@ ALPHA = 0.2
 QUORUM = 2
 RATE_LIMIT = 300
 CHAIN = [
-    ({"librewolf", "wofi", "waybar"}, {"bash", "sh", "zsh"}, 5, "shell escape from GUI"),
+    ({"librewolf", "rofi", "thunar"}, {"bash", "sh", "zsh"}, 5, "shell escape from GUI"),
     ({"bash", "sh", "zsh"}, {"sudo", "doas"}, 2, "priv escalation after shell"),
     ({"sudo", "doas", "pkexec"}, {"modprobe", "insmod"}, 5, "module load via priv"),
 ]
@@ -265,7 +265,7 @@ def main():
                             key = f"chain:{pn}>{n}"
                             signals[key] += wgt
                             alert(f"priv chain {label}: {pn}>{n}", key=key)
-                            if n in ("bash", "sh", "zsh") and pn in ("librewolf", "wofi", "waybar"):
+                            if n in ("bash", "sh", "zsh") and pn in ("librewolf", "rofi", "thunar"):
                                 for pid, (pp, nn) in pids.items():
                                     if pp == pn and nn == n:
                                         try:

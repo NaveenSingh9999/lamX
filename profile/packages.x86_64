@@ -40,24 +40,29 @@ oath-toolkit
 libnewt
 qrencode
 
-# sway GUI, glassy via transparent apps on vanilla sway for ISO
-# full blur via swayfx installed post-boot on target
-# hyprland optional session for super smooth animations
-sway
-swaylock
-swayidle
-hyprland
-hyprlock
+# xfce desktop, light native X11 session
+xorg-server
+xfce4-session
+xfwm4
+xfce4-panel
+xfce4-settings
+xfdesktop
+thunar
+tumbler
+gvfs
+plank
+xfce4-whiskermenu-plugin
+xfce4-terminal
+xfce4-appfinder
+xfce4-power-manager
+xfce4-screensaver
+xfce4-notifyd
+rofi
+rofi
+starship
 xdg-desktop-portal
-xdg-desktop-portal-hyprland
-xdg-desktop-portal-wlr
+xdg-desktop-portal-gtk
 xdg-utils
-waybar
-wofi
-foot
-mako
-swaybg
-xorg-xwayland
 polkit
 polkit-gnome
 seatd

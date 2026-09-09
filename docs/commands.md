@@ -12,7 +12,7 @@ Every tool ships on PATH. Anything touching hardware or security needs sudo.
 
 ## lamx-spotlight — themed search
 
-Mod+Space. Prefixes: `=2+2` calculates, `/term` finds files with fd, `@term` streams music matches, `?term` opens web search, plain text launches apps and commands. Wofi only, glassy theme inherited.
+Super+Space. Prefixes: `=2+2` calculates, `/term` finds files with fd, `@term` streams music matches, `?term` opens web search, plain text launches apps and commands. Rofi menu matching the theme.
 
 ## lamx-music — streaming player
 
@@ -46,9 +46,9 @@ Local-only web UI on loopback, opened in the browser with one command. Live serv
 
 `sudo lamx-xtreme on` pins performance governor and energy preference, pauses thermald, maxes Nvidia if present, drops caches. Refuses on battery unless `--force`. `off` restores balanced profile. `status` shows state.
 
-## lamx-glassy / lamx-setup / lamx-help
+## lamx-setup / lamx-help
 
-`lamx-glassy on` enables full SwayFX blur after extras install. `lamx-setup` reruns the first-boot wizard. `lamx-help` prints the condensed version of this page on device. First graphical login greets once with live protection state.
+`lamx-setup` reruns the first-boot wizard. `lamx-help` prints the condensed version of this page on device. First graphical login greets once with live protection state.
 
 ## kzc-digest — morning summary
 
@@ -60,7 +60,7 @@ Runs daily at 8 through a user timer: suspects, quarantines, decisions, top scor
 
 ## lamx-eye — privacy indicators
 
-Mic, camera, and casting state from the PipeWire graph plus device handles, debounced. Plain output, `--watch` live view, `--json` for the Waybar pill that turns red while in use.
+Mic, camera, and casting state from the PipeWire graph plus device handles, debounced. Plain output, `--watch` live view, `--json` for bar integrations that turn red while in use.
 
 ## lamx-idle — sip mode
 

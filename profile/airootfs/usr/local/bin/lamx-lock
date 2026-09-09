@@ -1,20 +1,7 @@
 #!/usr/bin/env bash
-# lock - branded lock screen, best tool per session
-# hyprlock with lamX face on Hyprland, swaylock-effects with blur clock on Sway
-if [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && command -v hyprlock >/dev/null; then
-  exec hyprlock -c /etc/xdg/hypr/hyprlock.conf
-elif command -v swaylock >/dev/null; then
-  BG="$HOME/Pictures/Wallpapers/live/wallpaper.png"
-  [ -f "$BG" ] || BG="/usr/share/backgrounds/forest-day.png"
-  if swaylock --help 2>&1 | grep -q effect-blur; then
-    exec swaylock --screenshots --clock --indicator --indicator-radius 110 \
-      --effect-blur 7x5 --effect-vignette 0.5:0.5 \
-      --ring-color 3b82f6 --key-hl-color 60a5fa --inside-color 0a0e1acc \
-      --timestr "%H:%M" --datestr "%A %d %B" --font "IosevkaTerm Nerd Font" -f -c 0a0e1a
-  else
-    exec swaylock --clock --indicator --ring-color 3b82f6 --key-hl-color 60a5fa \
-      --inside-color 0a0e1acc -f -c 0a0e1a
-  fi
+# lock - xfce screensaver lock, falls back to session lock
+if command -v xfce4-screensaver-command >/dev/null; then
+  exec xfce4-screensaver-command --lock
 else
   loginctl lock-session
 fi

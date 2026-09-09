@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# lamX installer - single-user, LUKS2 + TPM2+PIN, Sway, CLI-first
+# lamX installer - single-user, LUKS2 + TPM2+PIN, XFCE, terminal-first
 # usage: sudo ./scripts/install.sh /dev/nvme0n1
 DISK="${1:-}"
 USERN="${2:-lamx}"
@@ -43,8 +43,9 @@ mount "$ESP" /mnt/boot
 PKGS=$(grep -vE '^\s*(#|$)' profile/packages.x86_64 | tr '\n' ' ')
 # shellcheck disable=SC2086
 pacstrap -K /mnt $PKGS
-# extras post-install via chaotic-aur: swayfx glassy, blur lock, opencode head
-arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm swayfx swaylock-effects opencode-bin quickemu mpvpaper eww mpv-mpris zen-browser-bin && /usr/local/bin/lamx-glassy on" || echo "extras skipped, install manually later"
+# extras post-install via chaotic-aur: opencode head, quickemu, zen browser
+arch-chroot /mnt bash -c "pacman-key --recv-keys 3056513887B78AEB --keyserver keyserver.ubuntu.com && pacman-key --lsign-key 3056513887B78AEB && pacman -U --noconfirm https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst && echo -e '\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf && pacman -Sy --noconfirm && pacman -S --noconfirm opencode-bin quickemu zen-browser-bin" || echo "extras skipped, install manually later"
+arch-chroot /mnt bash -c "pacman -S --noconfirm whitesur-gtk-theme capitaine-cursors xwinwrap" 2>/dev/null || echo "mac styling skipped, Adwaita fallback active"
 arch-chroot /mnt bash -c "pacman -S --noconfirm distrobox podman fuse-overlayfs crun qemu-desktop virt-manager libvirt edk2-ovmf swtpm dnsmasq bpftrace linux-cachyos-hardened-headers && systemctl enable libvirtd" 2>/dev/null || echo "vm, container, and forensics stack skipped, rerun online later"
 ZEN_DESK=$(arch-chroot /mnt bash -c 'ls /usr/share/applications/*zen*.desktop 2>/dev/null | head -n1')
 if [ -n "$ZEN_DESK" ]; then
@@ -70,7 +71,7 @@ cp -r profile/airootfs/* /mnt/ || true
 mkdir -p /mnt/usr/lib/librewolf/distribution
 cp profile/librewolf-policies.json /mnt/usr/lib/librewolf/distribution/policies.json
 cp scripts/apply-desktop.sh /mnt/usr/local/bin/apply-desktop.sh
-arch-chroot /mnt /usr/local/bin/apply-desktop.sh || echo "desktop styling skipped, rerun apply-desktop.sh later"
+# theming applies in lamx-setup inside a live session, chroot has no display bus
 cp /tmp/lamx-shadow.target /mnt/etc/shadow
 cp /tmp/lamx-gshadow.target /mnt/etc/gshadow
 cp profile/mkinitcpio.conf.lamx /mnt/etc/mkinitcpio.conf

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # music - native streaming player, YouTube audio via mpv, no accounts
-# runs in a terminal with fzf selection everywhere, GUI binds open foot
+# runs in a terminal with fzf selection everywhere
 # usage: music [search terms] | music --queue [terms] | music --subs
 case "${1:-}" in
   --queue|-q) shift; exec ytfzf -m -a "$@" ;;

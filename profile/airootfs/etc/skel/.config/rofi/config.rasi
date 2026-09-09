@@ -1,0 +1,27 @@
+configuration {
+  modi: "drun,run";
+  show-icons: true;
+  display-drun: ">";
+  font: "IosevkaTerm Nerd Font 11";
+}
+* {
+  background-color: #0a0e1aee;
+  text-color: #e5e5e5;
+  border-color: #3b82f6;
+}
+window {
+  border-radius: 14px;
+  border: 1px;
+  padding: 12px;
+  width: 520px;
+}
+element selected {
+  background-color: #3b82f6bf;
+  text-color: #ffffff;
+  border-radius: 10px;
+}
+inputbar {
+  background-color: #ffffff12;
+  border-radius: 10px;
+  margin: 0 0 8px 0;
+}

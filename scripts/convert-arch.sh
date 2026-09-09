@@ -30,7 +30,7 @@ echo "[3/7] install lamX package set from profile"
 PKGS=$(grep -vE '^\s*(#|$)' "$REPO_DIR/profile/packages.x86_64" | tr '\n' ' ')
 # shellcheck disable=SC2086
 pacman -S --noconfirm --needed $PKGS || echo "WARN: some packages failed, continuing"
-pacman -S --noconfirm --needed swayfx swaylock-effects opencode-bin || echo "WARN: glassy extras skipped"
+pacman -S --noconfirm --needed opencode-bin || echo "WARN: opencode head skipped"
 
 echo "[4/7] copy lamX configs, excluding identity and disk files"
 EXCL=(etc/shadow etc/gshadow etc/passwd etc/group etc/fstab etc/crypttab etc/crypttab.initramfs etc/hostname etc/machine-id etc/adjtime)
@@ -50,7 +50,6 @@ echo "[5/7] user groups and shell defaults"
 usermod -aG wheel,video,audio,seat,libvirt,kvm "$USERN" || true
 cp -rn /etc/skel/. "/home/$USERN/" 2>/dev/null || true
 chown -R "$USERN:$USERN" "/home/$USERN" 2>/dev/null || true
-grep -q "config.d/fx" /etc/sway/config.d/lamx 2>/dev/null || echo "include /etc/sway/config.d/fx" >> /etc/sway/config.d/lamx || true
 
 echo "[6/7] enable services (console only, SSH unaffected)"
 systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true

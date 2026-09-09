@@ -4,7 +4,7 @@
 
 **Ultra-light, Arch-based daily driver for people who live in the terminal but want a beautiful desktop on demand.**
 
-Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default, Hyprland for animations** · Design: **CLI-first, GUI on demand** · Security: **on-device KZC, passwordless TPM + phone key**
+Base: **CachyOS hardened (Arch-compatible, x86_64)** · Session: **XFCE, terminal-first** · Design: **CLI-first, GUI on demand** · Security: **on-device KZC, passwordless TPM + phone key**
 
 > Private by design. Pre-login screens carry no OS advertising. The mark appears only where you invoke it.
 
@@ -24,9 +24,9 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 | Area | What you get |
 |---|---|
 | **Base** | CachyOS hardened kernel, Arch userland, systemd, Btrfs with zstd plus Snapper timelines, zram, quiet fast boot, no network wait |
-| **Desktop** | Sway keychord modes plus app-pinned workspaces, Hyprland fluent bounce motion, transparent Waybar, Wofi, Foot, Mako, eww center clock, live video wallpaper with still fallback |
+| **Desktop** | XFCE with dark theme, Pebble-Slate icons, IosevkaTerm terminal, rofi spotlight, live video wallpaper with still fallback |
 | **Display** | Max resolution plus max refresh auto-set every login, adaptive sync and VRR, 1080p fallback, wlr-randr for changes |
-| **Lock** | hyprlock face with lamX mark over blur and clock, swaylock-effects face with screenshot blur and date, one lamx-lock entry |
+| **Lock** | Screensaver lock with PIN plus key auth, one lamx-lock entry |
 | **Search** | Spotlight on Mod+Space: calc, instant file index, music, web, apps |
 | **Music** | ytfzf plus mpv streaming from YouTube, no accounts, realtime audio path, media keys everywhere |
 | **Text** | Apple-grade rendering preset, IosevkaTerm Nerd Font throughout, zsh with autosuggest plus highlighting plus Pure prompt |
@@ -37,7 +37,7 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Sway default
 | **Dev** | Distrobox isolation, Podman, man pages, completions, QEMU stack one command away |
 | **VMs** | Quickemu for instant ISO tests, virt-manager full GUI, both one command away post-install |
 
-Desktop styling ships through the installer, never bloating the ISO. Sway structure follows bibjaw99/workstation, Hyprland motion follows nv8v/workstation, apps and colors stay lamX.
+Desktop styling ships through the installer, never bloating the ISO. Hyprland or Sway can be added later from the terminal.
 
 ---
 
@@ -52,7 +52,7 @@ One ISO boots every x86_64 machine. Both CPU microcodes ship natively, generic M
 | <img src="https://cdn.simpleicons.org/nvidia/76B900" width="20" alt="Nvidia"> Nvidia | Chooser installs: open DKMS driver, utils, VA-API over NVDEC | NVDEC decode, Vulkan, Wayland via EGL |
 | VM | Chooser installs: spice-vdagent, guest agent, QXL | Paravirtual display |
 
-Media apps use it automatically: mpv hardware decode, PipeWire camera plugins, Hyprland and SwayFX GPU compositing.
+Media apps use it automatically: mpv hardware decode, PipeWire camera plugins.
 
 ---
 
@@ -63,7 +63,7 @@ Estimated from the package set. Measured boot plus desktop numbers land after ha
 | | Minimum | Recommended |
 |---|---|---|
 | CPU | Any 64-bit x86, 2 cores, Intel or AMD | 2015 or newer for v3 optimized repos |
-| RAM | 2 GB to boot live | 4 GB Sway daily, 8 GB Hyprland plus browser |
+| RAM | 2 GB to boot live | 4 GB daily driver, 8 GB heavy multitasking |
 | Disk | 12 GB install | 25 GB plus room for Snapper timelines |
 | Boot | UEFI or BIOS | UEFI plus TPM 2.0 for passwordless disk |
 | Network | Needed once for install | Always on for updates and sync |

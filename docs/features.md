@@ -8,7 +8,7 @@ CachyOS hardened kernel on vanilla Arch userland, x86_64, systemd. Lean base boo
 
 ## Desktop
 
-Sway by default for battery, Hyprland session for bezier animations. Transparent Waybar, Wofi, Foot, Mako. SwayFX blur unlocks post-install. Spotlight on Mod+Space, music on Mod+M, media keys everywhere. Hex mark shows in fetch output.
+XFCE desktop with dark theme and Pebble-Slate icons, IosevkaTerm terminal with starship prompt, rofi spotlight on Super+Space, music on Super+M, media keys everywhere. Hex mark shows in fetch output. Hyprland or Sway can be layered later from the terminal.
 
 ## Audio and music
 

@@ -1,24 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# spotlight - single-key search matching the glassy theme
+# spotlight - single-key search with rofi
 # prefixes: =expr calc, / files, @ music, ? web, else apps and commands
 Q="${1:-}"
-[ -n "$Q" ] || Q=$(echo "" | wofi --show dmenu -p ">" -i --cache-file /dev/null) || exit 0
+[ -n "$Q" ] || Q=$(echo "" | rofi -dmenu -p ">" -i) || exit 0
 [ -n "$Q" ] || exit 0
 case "$Q" in
-  =*) python3 -c "print(eval('${Q#=}'))" 2>/dev/null | wofi --show dmenu -p "=" || true ;;
+  =*) python3 -c "print(eval('${Q#=}'))" 2>/dev/null | rofi -dmenu -p "=" || true ;;
   /*) q="${Q#/}"
       found=$(locate -i -l 30 "$q" 2>/dev/null | grep -vE '^/(proc|sys|dev)/' | head -n 30)
       [ -z "$found" ] && found=$(fd -i -H -t f -t d "$q" "$HOME" 2>/dev/null | head -n 30)
-      sel=$(printf '%s\n' "$found" | wofi --show dmenu -i -p ">" --filter "$q") || exit 0
+      sel=$(printf '%s\n' "$found" | rofi -dmenu -i -p ">" -filter "$q") || exit 0
       [ -z "$sel" ] && exit 0
-      if [ -d "$sel" ]; then exec foot yazi "$sel"
+      if [ -d "$sel" ]; then exec xfce4-terminal -e "yazi $sel"
       else xdg-open "$sel" 2>/dev/null || exec "$sel"; fi ;;
-  @*) exec foot lamx-music "${Q#@}" ;;
+  @*) exec xfce4-terminal -e "lamx-music ${Q#@}" ;;
   \?*) exec xdg-open "https://duckduckgo.com/?q=${Q#\?}" ;;
-  *) sel=$(compgen -c "$Q" | sort -u | wofi --show dmenu -p ">" --filter "$Q" | head -n1) || exit 0
+  *) sel=$(compgen -c "$Q" | sort -u | rofi -dmenu -p ">" -filter "$Q" | head -n1) || exit 0
       [ -z "$sel" ] && exit 0
-      if pgrep -x sway >/dev/null; then exec swaymsg exec -- "$sel"
-      elif pgrep -x Hyprland >/dev/null; then exec hyprctl dispatch exec -- "$sel"
-      else exec $sel; fi ;;
+      exec "$sel" ;;
 esac

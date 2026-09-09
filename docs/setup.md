@@ -9,7 +9,7 @@ sudo dd if=lamX-<date>-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 
 Boot the USB in UEFI mode.
 
-VirtualBox: 4 GB RAM and 2 CPUs minimum, EFI mode optional since both loaders ship, 3D acceleration off, VMSVGA adapter. Pick Sway at login, Hyprland needs real GPU drivers. Boot is quiet with status only.
+VirtualBox: 4 GB RAM and 2 CPUs minimum, EFI mode optional since both loaders ship, 3D acceleration off, VMSVGA adapter. Pick the XFCE session at login. Boot is quiet with status only.
 
 ## 2. Network in live session
 
@@ -44,15 +44,15 @@ pamu2fcfg -u lamx >> /etc/pam-u2f/authfile   # phone now, hardware key later the
 
 Boot: PIN plus TPM. Lock and sudo: key touch, fallback PIN plus Aegis code.
 
-## 6. Full glassy UI
+## 6. Desktop theme
 
-The ISO ships vanilla Sway so it builds and boots everywhere. On your machine:
+The ISO ships a lean XFCE so it builds and boots everywhere. The wizard applies the dark theme, icons, wallpaper, and shortcuts automatically. Reapply anytime:
 
 ```bash
-sudo lamx-glassy on   # after swayfx lands via extras install, then restart Sway
+sudo apply-desktop.sh
 ```
 
-Pick Sway for battery or Hyprland for animations at login. Details in [sessions](sessions.md).
+Details in [sessions](sessions.md).
 
 ## 7. Verify the install
 

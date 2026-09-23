@@ -74,6 +74,19 @@ Estimated from the package set. Measured boot plus desktop numbers land after ha
 
 You need an x86_64 laptop, UEFI or BIOS boot, a 4 GB USB stick, and internet. **The installer wipes the target disk.**
 
+### 0. Download and verify the ZIP-only release
+
+Releases publish split-compatible ZIP assets rather than raw ISOs. Download every `lamX-*.z01`, `lamX-*.zip`, `SHA256SUMS.txt`, and `SOURCE_ISO_SHA256.txt` file for the release into one directory, then:
+
+```bash
+sha256sum -c SHA256SUMS.txt
+zip -F lamX-<date>-x86_64.zip --out lamX-<date>-x86_64-unsplit.zip
+unzip lamX-<date>-x86_64-unsplit.zip
+sha256sum -c SOURCE_ISO_SHA256.txt
+```
+
+Skip the `zip -F` reassembly step when a release contains only one `.zip` file. Do not flash a ZIP part directly; only the verified extracted `.iso` is bootable.
+
 ### 1. Flash
 
 ```bash
@@ -91,13 +104,18 @@ sudo ./scripts/install.sh /dev/nvme0n1 lamx
 
 The installer partitions, encrypts with LUKS2, lays Btrfs subvolumes, installs the full set, writes both boot entries (`lamX` default, `lamX unleashed` without CPU mitigations), enables every service, enrolls TPM2 plus PIN, and asks for an initial login PIN. Root carries the same PIN hash for emergency recovery.
 
-### 3. First boot
+### 3. First boot and finish setup
 
 ```bash
 sudo lamx-setup
+pamu2fcfg -u lamx >> /etc/pam-u2f/authfile
+sudo apply-desktop.sh
+lamx-help
+lamx list
+systemctl is-active kzc-monitor kzc-head auditd
 ```
 
-Timezone, keyboard, device name, TOTP QR for Aegis, phone FIDO enroll, WiFi, GPU chooser, live wallpaper fetch, speed-versus-armor question, snapshot baseline, KZC check. Runs once.
+`lamx-setup` runs once: timezone, keyboard, device name, TOTP QR for Aegis, phone FIDO enroll, WiFi, GPU chooser, live wallpaper fetch, speed-versus-armor question, snapshot baseline, and KZC check. The remaining commands enroll the unlock key, apply the desktop theme, and verify the installed services. Optional VPN, phone pairing, backups, and recovery keys are covered in [Complete setup](docs/setup.md).
 
 ```bash
 lamx-help   # every command, anytime
@@ -175,7 +193,7 @@ Single user, root login disabled on installed targets with PIN hash kept for eme
 
 ## Releases
 
-See [Releases](../../releases) for ISOs plus SHA256SUMS plus the live wallpaper loop. Verify with `sha256sum`.
+See [Releases](../../releases) for ZIP-only ISO assets plus `SHA256SUMS.txt`, `SOURCE_ISO_SHA256.txt`, and the live wallpaper loop. Verify the ZIP parts first, reassemble split archives when present, unzip, then verify the extracted ISO before flashing.
 
 ---
 
@@ -189,7 +207,8 @@ scripts/                 build, repack, install, convert-arch, apply-desktop,
 docs/                    setup, sessions, commands, features, kzc
 assets/                  release-hosted extras like the wallpaper loop
 .devcontainer/           codespaces default plus arch build env
-.github/workflows/      build-iso (manual plus tags), boot-test, promote-release
+.github/workflows/      build-iso (manual plus tags), boot-test, compress-iso maximum ZIP,
+                          promote-release ZIP-only publishing
 ```
 
 ---

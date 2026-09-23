@@ -1,0 +1,56 @@
+name: compress-iso
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build run ID holding the lamX-iso artifact"
+        required: true
+
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+      - name: Download ISO artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lamX-iso
+          path: ./iso
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install compression tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq zip p7zip-full
+
+      - name: Compress ISO with maximum ZIP and split over 1.2GB
+        timeout-minutes: 90
+        run: |
+          set -euo pipefail
+          ISO=$(find iso -type f -name '*.iso' | head -n1)
+          [ -n "$ISO" ] || { echo "no ISO downloaded"; ls -R iso; exit 1; }
+          BASE=$(basename "$ISO" .iso)
+          echo "compressing $ISO"
+          7z a -tzip -mx=9 -mm=Deflate -mfb=258 -mpass=15 "$BASE.zip" "$ISO"
+          7z t "$BASE.zip"
+          sha256sum "$ISO" > SOURCE_ISO_SHA256.txt
+          mkdir -p release-zip
+          MAX_BYTES=1200000000
+          SIZE=$(stat -c%s "$BASE.zip")
+          echo "zip bytes: $SIZE"
+          if [ "$SIZE" -le "$MAX_BYTES" ]; then
+            mv "$BASE.zip" release-zip/
+          else
+            echo "splitting ZIP into 1200000000-byte parts"
+            zip -s 1171875k "$BASE.zip" --out "release-zip/$BASE.zip"
+            rm -f "$BASE.zip"
+          fi
+          (cd release-zip && sha256sum lamX-*.zip* > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          ls -lh release-zip/
+
+      - name: Upload ZIP artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lamX-iso-zip
+          path: release-zip/

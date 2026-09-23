@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       run_id:
-        description: "Build run ID holding the lamX-iso artifact"
+        description: "Compress run ID holding the lamX-iso-zip artifact"
         required: true
         default: "34026784430"
       tag:
@@ -20,18 +20,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download ISO artifact from build run
+      - name: Download ZIP artifact from compress run
         uses: actions/download-artifact@v4
         with:
-          name: lamX-iso
-          path: ./release-iso
+          name: lamX-iso-zip
+          path: ./release-zip
           run-id: ${{ inputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare release assets
+      - name: Verify release assets
         run: |
-          ls -lh release-iso/
-          cd release-iso && sha256sum *.iso > SHA256SUMS.txt && cat SHA256SUMS.txt
+          set -euo pipefail
+          ls -lh release-zip/
+          (cd release-zip && sha256sum -c SHA256SUMS.txt)
+          find release-zip -maxdepth 1 -name 'lamX-*.zip*' -print -quit | grep -q . || { echo "no ZIP asset"; exit 1; }
+          find release-zip -maxdepth 1 -name 'lamX-*.zip*' -printf '%s %p\n' | awk '$1 > 1200000000 { oversize=1; print "oversize:", $0 } END { exit oversize }'
 
       - name: Publish to Releases
         uses: softprops/action-gh-release@v2
@@ -41,9 +44,8 @@ jobs:
           body: |
             lamX ${{ inputs.tag }} — ultra-light CachyOS-based daily driver.
 
-            ISO built from run ${{ inputs.run_id }}. See README for full install commands.
-            Verify with SHA256SUMS.txt after download.
+            ZIP-only release built from compress run ${{ inputs.run_id }}. Download every lamX-*.zip* part plus SHA256SUMS.txt, verify checksums, unzip/split-reassemble, then verify SOURCE_ISO_SHA256.txt before flashing. See README for exact commands.
           files: |
-            release-iso/*.iso
-            release-iso/SHA256SUMS.txt
-          fail_on_unmatched_files: false
+            release-zip/lamX-*.zip*
+            release-zip/*.txt
+          fail_on_unmatched_files: true

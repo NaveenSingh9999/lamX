@@ -215,4 +215,4 @@ assets/                  release-hosted extras like the wallpaper loop
 
 ## Status
 
-v1.6 released and boot-proven in CI. Current build carries the desktop applier, max display setup, branded lock faces, and wallpaper auto-fetch. Hardware validation continues on real machines.
+v1.9 released as ZIP-only assets and boot-proven in CI. Current build carries the desktop applier, max display setup, branded lock faces, and wallpaper auto-fetch. Hardware validation continues on real machines.

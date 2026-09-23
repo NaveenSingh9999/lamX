@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Drive the VM over QMP: wait for login, sign in as root, start SDDM,
-capture frames along the way. PPM frames become PNGs via stdlib."""
+"""Drive the VM over QMP plus an interactive serial socket.
+Sign in on serial, start SDDM, photograph every stage."""
 import json
 import os
 import socket
 import struct
 import subprocess
+import threading
 import time
 import zlib
 
 QMP = "qmp.sock"
+SER = "serial.sock"
 OUT = "frames"
 os.makedirs(OUT, exist_ok=True)
+LOGF = open("serial.log", "wb", buffering=0)
 
 QCODE = {c: c for c in "abcdefghijklmnopqrstuvwxyz0123456789"}
 QCODE.update({" ": "spc", "-": "minus", "_": "minus", "/": "slash",
@@ -44,30 +47,6 @@ def cmd(s, obj):
     return data
 
 
-def wait_serial(text, timeout):
-    end = time.time() + timeout
-    while time.time() < end:
-        try:
-            with open("serial.log", errors="replace") as f:
-                if text in f.read():
-                    return True
-        except OSError:
-            pass
-        time.sleep(5)
-    return False
-
-
-def sendkey(s, keys, hold=0.4):
-    downs = [{"type": "qcode", "data": [k]} for k in keys]
-    cmd(s, {"execute": "send-key", "arguments": {"keys": downs, "hold-time": int(hold * 1000)}})
-    time.sleep(hold + 0.3)
-
-
-def typeline(s, line):
-    for ch in line:
-        sendkey(s, [QCODE.get(ch, "spc")], 0.15)
-
-
 def shot(s, name):
     cmd(s, {"execute": "screendump", "arguments": {"filename": f"/tmp/{name}.ppm"}})
     subprocess.run(["cp", f"/tmp/{name}.ppm", f"{OUT}/{name}.ppm"], check=False)
@@ -76,8 +55,7 @@ def shot(s, name):
 
 def ppm_to_png(src, dst):
     with open(src, "rb") as f:
-        magic = f.readline()
-        assert magic.strip() == b"P6"
+        assert f.readline().strip() == b"P6"
         line = f.readline()
         while line.startswith(b"#"):
             line = f.readline()
@@ -98,27 +76,74 @@ def ppm_to_png(src, dst):
     open(dst, "wb").write(png)
 
 
+class Serial:
+    def __init__(self):
+        self.buf = bytearray()
+        self.sock = None
+
+    def connect(self):
+        for _ in range(90):
+            try:
+                self.sock = socket.socket(socket.AF_UNIX)
+                self.sock.connect(SER)
+                self.sock.settimeout(5)
+                threading.Thread(target=self._pump, daemon=True).start()
+                return
+            except OSError:
+                time.sleep(5)
+        raise SystemExit("no serial")
+
+    def _pump(self):
+        while True:
+            try:
+                d = self.sock.recv(65536)
+                if not d:
+                    return
+                self.buf += d
+                LOGF.write(d)
+            except OSError:
+                return
+
+    def expect(self, text, timeout):
+        end = time.time() + timeout
+        while time.time() < end:
+            if text.encode() in bytes(self.buf):
+                return True
+            time.sleep(5)
+        return False
+
+    def send(self, text):
+        self.sock.send(text.encode())
+        time.sleep(2)
+
+
 s = qmp()
-print("qmp up, waiting for boot menu", flush=True)
-time.sleep(45)
+print("qmp up", flush=True)
+time.sleep(40)
 shot(s, "01-syslinux")
-print("waiting for login prompt", flush=True)
-if not wait_serial("archlinux login:", 420):
+ser = Serial()
+ser.connect()
+print("serial up", flush=True)
+if not ser.expect("archlinux login:", 420):
     shot(s, "02-stuck")
     raise SystemExit("no login prompt")
 shot(s, "02-console-login")
-print("signing in as root", flush=True)
-typeline(s, "root")
-sendkey(s, ["ret"])
-time.sleep(3)
-sendkey(s, ["ret"])
-time.sleep(3)
+print("signing in", flush=True)
+ser.send("root\n")
+ser.expect("Password:", 30)
+ser.send("\n")
+if not ser.expect("root@archlinux", 30):
+    shot(s, "03-login-failed")
+    raise SystemExit("signin failed")
 print("starting sddm", flush=True)
-typeline(s, "systemctl start sddm")
-sendkey(s, ["ret"])
+ser.send("systemctl start sddm\n")
 for i in range(6):
     time.sleep(20)
-    shot(s, f"03-sddm-{i}")
+    shot(s, f"04-sddm-{i}")
+print("journal check", flush=True)
+ser.send("systemctl is-active sddm; loginctl --no-legend\n")
+time.sleep(10)
+shot(s, "05-final")
 print("done", flush=True)
 for f in sorted(os.listdir(OUT)):
     if f.endswith(".ppm"):

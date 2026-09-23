@@ -2,13 +2,17 @@
 
 ## Login
 
-Boot decrypts with PIN plus TPM, then greetd shows **tuigreet**: time, username field, and session picker. Choose the XFCE session, authenticate with key touch or PIN plus Aegis code, Enter. No graphical login manager by design — lighter and fewer moving parts.
+Boot shows the Trueno lamX face, decrypts with PIN plus TPM, then SDDM astronaut with Jake: pick Caelestia shell or XFCE, authenticate with key touch or PIN plus Aegis code, Enter.
 
 Other consoles: tty2–tty6 run plain getty logins, same passwordless PAM. SSH uses the same auth.
 
-## XFCE desktop
+## Caelestia shell (default)
 
-Classic panel workflow with lamX theming: dark Adwaita, Pebble-Slate icons, IosevkaTerm everywhere, forest still wallpaper with the live loop one fetch away. Power management and screensaver lock built in.
+Quickshell desktop with dark scheme, bar, launcher, notifications, lock screen, control center. Media keys, brightness keys, and Mod+Return terminal work out of the box.
+
+## XFCE desktop (second)
+
+Classic panel workflow with mac-glass theming: dark theme, Pebble-Slate icons, IosevkaTerm terminal, rofi spotlight on Super+Space, music on Super+M. Power management and screensaver lock built in.
 
 ## Keys
 
@@ -20,11 +24,11 @@ Classic panel workflow with lamX theming: dark Adwaita, Pebble-Slate icons, Iose
 | Alt+F2 | run command |
 | Print | screenshot to clipboard |
 
-Auto-lock on idle through the screensaver, lid close locks.
+Auto-lock on idle through the shell or screensaver, lid close locks.
 
 ## GUI to TUI and back
 
 - GUI to console: Ctrl+Alt+F3 drops to tty3 getty. The graphical session keeps running on tty1.
-- Back: Ctrl+Alt+F1 returns to the desktop.
-- Restart the desktop without rebooting: log out from the panel menu, pick the session again at tuigreet.
-- Reboot or poweroff from GUI: panel menu, or `systemctl reboot` in terminal.
+- Back: Ctrl+Alt+F1 returns to SDDM, Ctrl+Alt+F2 usually holds the desktop session.
+- Restart the desktop without rebooting: log out to SDDM and pick the other session.
+- Reboot or poweroff from GUI: session menu, or `systemctl reboot` in terminal.

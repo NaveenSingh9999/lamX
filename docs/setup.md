@@ -9,7 +9,7 @@ sudo dd if=lamX-<date>-x86_64.iso of=/dev/sdX bs=4M status=progress oflag=sync
 
 Boot the USB in UEFI mode.
 
-VirtualBox: 4 GB RAM and 2 CPUs minimum, EFI mode optional since both loaders ship, 3D acceleration off, VMSVGA adapter. Pick the XFCE session at login. Boot is quiet with status only.
+VirtualBox: 4 GB RAM and 2 CPUs minimum, EFI mode optional since both loaders ship, 3D acceleration off, VMSVGA adapter. Pick Caelestia or XFCE at the astronaut login. Boot shows the lamX face.
 
 ## 2. Network in live session
 

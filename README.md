@@ -4,7 +4,7 @@
 
 **Ultra-light, Arch-based daily driver for people who live in the terminal but want a beautiful desktop on demand.**
 
-Base: **CachyOS hardened (Arch-compatible, x86_64)** · Session: **XFCE, terminal-first** · Design: **CLI-first, GUI on demand** · Security: **on-device KZC, passwordless TPM + phone key**
+Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Caelestia shell first, XFCE second** · Login: **SDDM astronaut** · Design: **CLI-first, GUI on demand** · Security: **on-device KZC, passwordless TPM + phone key**
 
 > Private by design. Pre-login screens carry no OS advertising. The mark appears only where you invoke it.
 
@@ -24,7 +24,7 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Session: **XFCE, termina
 | Area | What you get |
 |---|---|
 | **Base** | CachyOS hardened kernel, Arch userland, systemd, Btrfs with zstd plus Snapper timelines, zram, quiet fast boot, no network wait |
-| **Desktop** | XFCE with dark theme, Pebble-Slate icons, IosevkaTerm terminal, rofi spotlight, live video wallpaper with still fallback |
+| **Desktop** | Caelestia shell with dark scheme, XFCE with mac-glass theme, Pebble-Slate icons, IosevkaTerm plus Trueno faces, rofi spotlight, live video wallpaper with still fallback |
 | **Display** | Max resolution plus max refresh auto-set every login, adaptive sync and VRR, 1080p fallback, wlr-randr for changes |
 | **Lock** | Screensaver lock with PIN plus key auth, one lamx-lock entry |
 | **Search** | Spotlight on Mod+Space: calc, instant file index, music, web, apps |
@@ -37,7 +37,7 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Session: **XFCE, termina
 | **Dev** | Distrobox isolation, Podman, man pages, completions, QEMU stack one command away |
 | **VMs** | Quickemu for instant ISO tests, virt-manager full GUI, both one command away post-install |
 
-Desktop styling ships through the installer, never bloating the ISO. Hyprland or Sway can be added later from the terminal.
+Desktop styling ships through the installer, never bloating the ISO. Astronaut theme with Jake, Caelestia shell, and extras download during install while online. Boot shows the Trueno lamX face.
 
 ---
 

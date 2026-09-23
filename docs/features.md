@@ -8,7 +8,7 @@ CachyOS hardened kernel on vanilla Arch userland, x86_64, systemd. Lean base boo
 
 ## Desktop
 
-XFCE desktop with dark theme and Pebble-Slate icons, IosevkaTerm terminal with starship prompt, rofi spotlight on Super+Space, music on Super+M, media keys everywhere. Hex mark shows in fetch output. Hyprland or Sway can be layered later from the terminal.
+Caelestia shell with dark scheme plus XFCE mac-glass second, Pebble-Slate icons, IosevkaTerm terminal with starship prompt, rofi spotlight on Super+Space, music on Super+M, media keys everywhere. Hex mark shows in fetch output. SDDM astronaut login with Jake, Trueno boot face.
 
 ## Audio and music
 

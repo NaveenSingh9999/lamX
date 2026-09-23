@@ -28,10 +28,13 @@ jobs:
       - name: Boot and photograph
         timeout-minutes: 25
         run: |
+          ISO=$(find iso -name '*.iso' | head -n1)
+          [ -n "$ISO" ] || { echo "no ISO downloaded"; ls -R iso; exit 1; }
+          echo "booting $ISO"
           if [ -r /dev/kvm ] && [ -w /dev/kvm ]; then ACC="-machine accel=kvm -cpu host"; else ACC="-accel tcg,thread=multi"; fi
           timeout 570 qemu-system-x86_64 $ACC -m 3072 -smp 2 \
-            -cdrom iso/*.iso -boot order=d -vga virtio \
-            -display none -serial file:serial.log \
+            -cdrom "$ISO" -boot order=d -display none \
+            -serial file:serial.log -vnc :0 \
             -qmp unix:qmp.sock,server=on,wait=off &
           python3 scripts/ci-shoot.py
           wait || true

@@ -35,6 +35,7 @@ jobs:
           7z t "$BASE.zip"
           sha256sum "$ISO" > SOURCE_ISO_SHA256.txt
           mkdir -p release-zip
+          mv SOURCE_ISO_SHA256.txt release-zip/
           MAX_BYTES=1200000000
           SIZE=$(stat -c%s "$BASE.zip")
           echo "zip bytes: $SIZE"
@@ -45,7 +46,7 @@ jobs:
             zip -s 1171875k "$BASE.zip" --out "release-zip/$BASE.zip"
             rm -f "$BASE.zip"
           fi
-          (cd release-zip && sha256sum lamX-*.zip* > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          (cd release-zip && sha256sum lamX-*.[zZ]?? > SHA256SUMS.txt && cat SHA256SUMS.txt)
           ls -lh release-zip/
 
       - name: Upload ZIP artifact

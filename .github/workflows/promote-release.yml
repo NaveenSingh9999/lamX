@@ -33,8 +33,8 @@ jobs:
           set -euo pipefail
           ls -lh release-zip/
           (cd release-zip && sha256sum -c SHA256SUMS.txt)
-          find release-zip -maxdepth 1 -name 'lamX-*.zip*' -print -quit | grep -q . || { echo "no ZIP asset"; exit 1; }
-          find release-zip -maxdepth 1 -name 'lamX-*.zip*' -printf '%s %p\n' | awk '$1 > 1200000000 { oversize=1; print "oversize:", $0 } END { exit oversize }'
+          find release-zip -maxdepth 1 -name 'lamX-*.[zZ]??' -print -quit | grep -q . || { echo "no ZIP asset"; exit 1; }
+          find release-zip -maxdepth 1 -name 'lamX-*.[zZ]??' -printf '%s %p\n' | awk '$1 > 1200000000 { oversize=1; print "oversize:", $0 } END { exit oversize }'
 
       - name: Publish to Releases
         uses: softprops/action-gh-release@v2
@@ -46,6 +46,6 @@ jobs:
 
             ZIP-only release built from compress run ${{ inputs.run_id }}. Download every lamX-*.zip* part plus SHA256SUMS.txt, verify checksums, unzip/split-reassemble, then verify SOURCE_ISO_SHA256.txt before flashing. See README for exact commands.
           files: |
-            release-zip/lamX-*.zip*
+            release-zip/lamX-*.[zZ]??
             release-zip/*.txt
           fail_on_unmatched_files: true

@@ -56,6 +56,9 @@ if [ -n "$ZEN_DESK" ]; then
   arch-chroot /mnt chown "$USERN:$USERN" /home/"$USERN"/.config/mimeapps.list 2>/dev/null || true
 fi
 arch-chroot /mnt bash -c "pacman -S --noconfirm freetype2-macos" 2>/dev/null || echo "macOS-like freetype skipped, stock stack already tuned"
+arch-chroot /mnt bash -c 'curl -fsSL https://raw.githubusercontent.com/keyitdev/sddm-astronaut-theme/master/setup.sh | bash' 2>/dev/null || echo "astronaut setup skipped"
+arch-chroot /mnt bash -c 'sed -i "s/^Character=.*/Character=jake/" /usr/share/sddm/themes/astronaut/theme.conf* 2>/dev/null; true'
+arch-chroot /mnt bash -c "pacman -S --noconfirm caelestia-shell quickshell" 2>/dev/null || arch-chroot /mnt bash -c "pacman -S --noconfirm quickshell" 2>/dev/null || echo "caelestia shell skipped, install later"
 arch-chroot /mnt bash -c "pacman -S --noconfirm man-db man-pages" 2>/dev/null || echo "man pages skipped"
 arch-chroot /mnt bash -c "pacman -S --noconfirm aide && mkdir -p /var/lib/aide && aide --init && mv /var/lib/aide/aide.db.new.gz /var/lib/aide/aide.db.gz" 2>/dev/null || echo "aide skipped, KZC hashing still covers persist paths"
 
@@ -92,9 +95,10 @@ arch-chroot /mnt fc-cache -f >/dev/null 2>&1 || true
 echo "LANG=C.UTF-8" > /mnt/etc/locale.conf
 echo "$HOSTN" > /mnt/etc/hostname
 ln -sf /usr/share/zoneinfo/UTC /mnt/etc/localtime
+arch-chroot /mnt plymouth-set-default-theme lamX 2>/dev/null || echo "plymouth theme skipped"
 arch-chroot /mnt mkinitcpio -P
 arch-chroot /mnt bootctl install --esp-path=/boot
-CMDLINE="root=/dev/mapper/lamxroot rw rootflags=subvol=@ rd.luks.name=$UUID=lamxroot quiet loglevel=3 systemd.show_status=auto preempt=full mem_sleep_default=deep lockdown=confidentiality slab_nomerge init_on_alloc=1 init_on_free=1 page_alloc.shuffle=1 vsyscall=none debugfs=off"
+CMDLINE="root=/dev/mapper/lamxroot rw rootflags=subvol=@ rd.luks.name=$UUID=lamxroot quiet splash loglevel=3 systemd.show_status=auto systemd.firstboot=no preempt=full mem_sleep_default=deep lockdown=confidentiality slab_nomerge init_on_alloc=1 init_on_free=1 page_alloc.shuffle=1 vsyscall=none debugfs=off"
 cat > /mnt/boot/loader/entries/lamx.conf <<EOF
 title lamX
 linux /vmlinuz-linux-cachyos-hardened
@@ -113,8 +117,8 @@ options $CMDLINE mitigations=off nowatchdog
 EOF
 echo "default lamx.conf
 timeout 3" > /mnt/boot/loader/loader.conf
-arch-chroot /mnt systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc lamx-firstboot thermald ananicy-cpp snapper-timeline.timer snapper-cleanup.timer fstrim.timer plocate-updatedb.timer "syncthing@$USERN" fwupd-refresh.timer kzc-aide.timer
-arch-chroot /mnt systemctl mask bluetooth NetworkManager-wait-online.service
+arch-chroot /mnt systemctl enable NetworkManager seatd sddm apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc lamx-firstboot thermald ananicy-cpp snapper-timeline.timer snapper-cleanup.timer fstrim.timer plocate-updatedb.timer "syncthing@$USERN" fwupd-refresh.timer kzc-aide.timer
+arch-chroot /mnt systemctl mask bluetooth NetworkManager-wait-online.service greetd
 arch-chroot /mnt systemctl --global enable kzc-digest.timer
 echo "Enroll TPM2+PIN now:"
 systemd-cryptenroll --tpm2-device=auto --tpm2-with-pin=yes --tpm2-pcrs=0+7 "$ROOT" || true

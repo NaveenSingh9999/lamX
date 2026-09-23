@@ -1,0 +1,30 @@
+# lamX boot face: Trueno wordmark over dark, orbit dots while loading
+Window.SetBackgroundTopColor(0.04, 0.05, 0.10);
+Window.SetBackgroundBottomColor(0.04, 0.05, 0.10);
+
+word.image = Image.Text("lamX", 1, 1, 1, "Trueno Semibold 72");
+word.sprite = Sprite(word.image);
+word.sprite.SetPosition(Window.GetX() + Window.GetWidth() / 2 - word.image.GetWidth() / 2, Window.GetHeight() / 2 - 130, 100);
+
+dots = [];
+count = 12;
+for (i = 0; i < count; i++) {
+  angle = 2 * Math.Pi() * i / count;
+  dx = Math.Cos(angle) * 48;
+  dy = Math.Sin(angle) * 48;
+  img = Image.Text("\u2022", 0.23, 0.51, 0.96, "Trueno Semibold 30");
+  s = Sprite(img);
+  s.SetPosition(Window.GetX() + Window.GetWidth() / 2 + dx - 10, Window.GetHeight() / 2 + 30 + dy, 99);
+  s.SetOpacity(0.2);
+  dots[i] = s;
+}
+
+fun refresh_callback() {
+  t = Plymouth.GetTime();
+  for (i = 0; i < count; i++) {
+    dots[i].SetOpacity(0.2 + 0.8 * Math.Abs(Math.Sin(t * 3 - i * Math.Pi() / 6)));
+  }
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+message_sprite = Sprite(Message(""));

@@ -30,6 +30,13 @@ arch-install-scripts
 # single-user + login (passwordless-ready, no passwords stored)
 greetd
 greetd-tuigreet
+sddm
+plymouth
+# caelestia host session, xfce stays installed as second
+hyprland
+quickshell
+foot
+xdg-desktop-portal-hyprland
 shadow
 sudo
 systemd

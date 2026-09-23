@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=lamX
+Description=lamX boot face
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/lamx
+ScriptFile=/usr/share/plymouth/themes/lamx/lamx.script

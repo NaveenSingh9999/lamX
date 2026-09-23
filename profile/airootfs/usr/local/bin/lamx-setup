@@ -32,6 +32,7 @@ chmod 600 /etc/pam-u2f/authfile
 . /usr/local/lib/lamx-pam.sh
 pam-wire /etc/pam.d/sudo
 pam-wire /etc/pam.d/greetd
+pam-wire /etc/pam.d/sddm
 if [ ! -f /etc/users.oath ]; then
   SECRET=$(head -c 20 /dev/urandom | base32 | tr -d '=' | cut -c1-32)
   echo "HOTP/T30/6 $USERN - $SECRET" > /etc/users.oath

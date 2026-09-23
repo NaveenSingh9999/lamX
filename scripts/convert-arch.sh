@@ -52,15 +52,15 @@ cp -rn /etc/skel/. "/home/$USERN/" 2>/dev/null || true
 chown -R "$USERN:$USERN" "/home/$USERN" 2>/dev/null || true
 
 echo "[6/7] enable services (console only, SSH unaffected)"
-systemctl enable NetworkManager seatd greetd apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true
+systemctl enable NetworkManager seatd sddm apparmor chronyd power-profiles-daemon systemd-resolved systemd-oomd auditd kzc-monitor kzc-head opencode-kzc thermald ananicy-cpp libvirtd "syncthing@$USERN" 2>/dev/null || true
 systemctl enable snapper-timeline.timer snapper-cleanup.timer fwupd-refresh.timer kzc-aide.timer fstrim.timer plocate-updatedb.timer 2>/dev/null || true
 snapper -c root create-config / 2>/dev/null || echo "snapper skipped, not btrfs"
-systemctl mask bluetooth NetworkManager-wait-online.service 2>/dev/null || true
+systemctl mask bluetooth NetworkManager-wait-online.service greetd 2>/dev/null || true
 systemctl --global enable kzc-digest.timer 2>/dev/null || true
 
 echo "[7/7] passwordless: same wiring as installer, see lamx-setup pam-wire"
 echo "  1. test in a second SSH session before logging out"
-echo "  2. run lamx-setup to enroll keys and wire sudo, greetd, lock"
+echo "  2. run lamx-setup to enroll keys and wire sudo, login, lock"
 echo ""
 echo "done. backup at $BACKUP"
 echo "reboot only if console access is available, SSH survives without reboot"

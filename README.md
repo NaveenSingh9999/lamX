@@ -24,7 +24,8 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Caelestia sh
 | Area | What you get |
 |---|---|
 | **Base** | CachyOS hardened kernel, Arch userland, systemd, Btrfs with zstd plus Snapper timelines, zram, quiet fast boot, no network wait |
-| **Desktop** | Caelestia shell with dark scheme, XFCE with mac-glass theme, Pebble-Slate icons, IosevkaTerm plus Trueno faces, rofi spotlight, live video wallpaper with still fallback |
+| **Desktop** | Caelestia shell first on Hyprland, XFCE with mac-glass theme second, Pebble-Slate icons, IosevkaTerm plus Trueno faces, rofi spotlight, live video wallpaper with still fallback |
+| **Caelestia session** | Waybar plus Caelestia shell autostart, polkit agent, live wallpaper, KZC greeting, 10-minute auto-lock with 15-minute display sleep; Super+Enter terminal, Super+D launcher, Super+M music, Super+Shift+E power menu |
 | **Display** | Max resolution plus max refresh auto-set every login, adaptive sync and VRR, 1080p fallback, wlr-randr for changes |
 | **Lock** | Screensaver lock with PIN plus key auth, one lamx-lock entry |
 | **Search** | Spotlight on Mod+Space: calc, instant file index, music, web, apps |
@@ -38,6 +39,17 @@ Base: **CachyOS hardened (Arch-compatible, x86_64)** · Sessions: **Caelestia sh
 | **VMs** | Quickemu for instant ISO tests, virt-manager full GUI, both one command away post-install |
 
 Desktop styling ships through the installer, never bloating the ISO. Astronaut theme with Jake, Caelestia shell, and extras download during install while online. Boot shows the Trueno lamX face.
+
+### v1.9 release
+
+v1.9 publishes the 2026.09.23 ISO as ZIP-only release assets:
+
+- `lamX-2026.09.23-x86_64.z01` — 1,200,000,000 bytes
+- `lamX-2026.09.23-x86_64.zip` — 994,104,270 bytes
+- `SHA256SUMS.txt`
+- `SOURCE_ISO_SHA256.txt`
+
+Download all four files, follow [Download and verify](#0-download-and-verify-the-zip-only-release), and flash only the verified extracted ISO. v1.9 keeps Caelestia first and XFCE second, with SDDM astronaut login, Trueno boot face, live wallpaper, music streaming, snapshots, KZC monitoring, and the end-to-end installer plus first-boot wizard.
 
 ---
 
